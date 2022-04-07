@@ -1,6 +1,7 @@
 /**
  * User schema
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const mongoose = require("mongoose");
 
@@ -32,12 +33,16 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["Organiser", "Co-Organiser", "Guest", "ServiceProvider"],
+      enum: ["Organizer", "Co-Organizer", "Guest", "ServiceProvider"],
       default: "Guest",
     },
     verified: {
       type: Boolean,
       default: false,
+    },
+    gender: {
+      type: String,
+      enum: ["male", "female", "others"],
     },
     otp: String,
     company_name: String, // only if user is ServiceProvider

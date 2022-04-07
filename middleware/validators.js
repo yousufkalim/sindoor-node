@@ -19,7 +19,7 @@ exports.validateUser = [
   check("phone")
     .notEmpty()
     .withMessage("Phone number is required.")
-    .isLength({ min: 12 })
+    .isLength(10)
     .withMessage("Invalid phone number format")
     .isNumeric()
     .withMessage("Phone number can only be numeric")
@@ -47,7 +47,7 @@ exports.validateUserUpdate = [
   check("email").optional().isEmail().withMessage("Invalid Email.").trim(),
   check("phone")
     .optional()
-    .isLength({ min: 12 })
+    .isLength(10)
     .withMessage("Invalid phone number format")
     .isNumeric()
     .withMessage("Phone number can only be numeric")
@@ -57,6 +57,11 @@ exports.validateUserUpdate = [
     .trim()
     .isIn(["Organizer", "Co-Organizer", "Guest", "ServiceProvider"])
     .withMessage("Invalid role"),
+  check("gender")
+    .optional()
+    .trim()
+    .isIn(["male", "female", "others"])
+    .withMessage("Invalid gender"),
 ];
 
 // Login validation
@@ -68,10 +73,16 @@ exports.validateLogin = [
     .withMessage("Invalid Email address")
     .trim()
     .toLowerCase(),
-  check("password", "Password is required.")
+  check("password", "Password is required.").notEmpty(),
+];
+
+// Status Validation
+exports.validateStatus = [
+  check("status")
     .notEmpty()
-    .trim()
-    .isLength({ min: 8 }),
+    .withMessage("Status is required.")
+    .isIn(["pending", "accepted", "refused"])
+    .withMessage("Invalid status."),
 ];
 
 // Change password validation
@@ -90,6 +101,47 @@ exports.changePasswordValidate = [
     .isLength({ min: 8 }),
 ];
 
+// Create event validation
+exports.createEventValidate = [
+  check("name", "Name is required").notEmpty().trim(),
+  check("type", "Type is required").notEmpty().trim(),
+  check("date", "Date is required").notEmpty().trim(),
+  check("start_time", "Start Time is required").notEmpty().trim(),
+  check("end_time", "End Time is required").notEmpty().trim(),
+  check("description", "Description is required").notEmpty().trim(),
+];
+
+exports.validateServiceProvider = [
+  check("company_name").notEmpty().withMessage("Company name is required."),
+  check("description").notEmpty().withMessage("Description is required."),
+  check("email")
+    .notEmpty()
+    .withMessage("Email is required.")
+    .isEmail()
+    .withMessage("Invalid Email address")
+    .trim(),
+  check("password")
+    .notEmpty()
+    .withMessage("Password is required.")
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage("Password must be minimum 8 characters"),
+  check("confirmPassword")
+    .notEmpty()
+    .withMessage("Password is required.")
+    .trim()
+    .isLength({ min: 8 })
+    .withMessage("Password must be minimum 8 characters"),
+  check("phone")
+    .notEmpty()
+    .withMessage("Phone number is required.")
+    .isLength(10)
+    .withMessage("Invalid phone number format")
+    .isNumeric()
+    .withMessage("Phone number can only be numeric")
+    .trim(),
+  check("location").notEmpty().withMessage("Location is required."),
+];
 /*
 ======================
 Result

@@ -1,8 +1,9 @@
 /**
  * User CRUD controllers
- * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const Users = require("../models/Users");
+const ServiceProviders = require("../models/ServiceProviders");
 const bcrypt = require("bcryptjs");
 const { sendOTP } = require("../utils/sendOTP");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
@@ -16,9 +17,10 @@ exports.create = async (req, res) => {
   try {
     let { email, password, phone } = req.body; // Getting required fields from body
     const existingUser = await Users.findOne({ email }); // Finding already existing user
+    const existingServiceProvider = await ServiceProviders.findOne({ email }); // Finding already existing user
 
     // Extra Validations
-    if (existingUser) {
+    if (existingUser || existingServiceProvider) {
       // If we found existing user in db
       return res
         .status(409)
@@ -38,6 +40,7 @@ exports.create = async (req, res) => {
     // Adding user in db
     await Users.create(req.body).then((user) => {
       //! uncomment send otp
+      //TODO: Change Phone number format to french before deploying.
       // Sending otp to user
       // sendOTP(phone, otp)
       //   .then(() => {
@@ -100,7 +103,7 @@ exports.update = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
 
-    //! Cannot update with this API
+    // Cannot update with this API
     if (req.body.password) {
       req.body.password = undefined;
     }
@@ -111,7 +114,7 @@ exports.update = async (req, res) => {
     }
 
     const user = await Users.findByIdAndUpdate(userId, req.body, { new: true }); // Updating the user
-    res.json({ success: true, user }); // Success
+    res.json({ success: true, message: "User updated successfully", user }); // Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

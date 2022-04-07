@@ -1,5 +1,5 @@
 /**
- * User CRUD routes
+ * User & Service Provider CRUD routes
  * @author Yousuf Kalim
  * @author Najam Ul Saqib
  */
@@ -13,7 +13,7 @@ const {
 } = require("../middleware/validators");
 
 /**
- ** Routes
+ ** User Routes
  * @method post user signup
  * @method get get all users
  * @method get get user by id

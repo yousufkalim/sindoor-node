@@ -208,6 +208,7 @@ exports.resendOtp = async (req, res) => {
       user.save(); // save user object
 
       //! uncomment send otp
+      //TODO: Change Phone number format to french before deploying.
       // Send OTP message to user phone number
       // sendOTP(user.phone, otp)
       //   .then(() => {

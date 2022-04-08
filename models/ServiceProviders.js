@@ -38,7 +38,7 @@ const serviceProviderSchema = new mongoose.Schema(
       default: false,
     },
     otp: String,
-    image: String,
+    photo: String,
   },
   {
     timestamps: true,

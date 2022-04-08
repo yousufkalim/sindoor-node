@@ -3,6 +3,7 @@
  * @author Yousuf Kalim
  */
 const Users = require("../models/Users");
+const ServiceProviders = require("../models/ServiceProviders");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
@@ -19,16 +20,19 @@ exports.login = async (req, res) => {
   try {
     // Getting email and password
     const { email, password } = req.body;
-
+    let role = "User";
     // Getting user from db
-    const user = await Users.findOne({ email });
+    let user = await Users.findOne({ email });
 
     if (!user) {
-      // If user not found
-      console.log(user);
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      // If user not found check from service providers
+      role = "ServiceProvider";
+      user = await ServiceProviders.findOne({ email }); // find user from service provider.
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
     }
 
     // Comparing password
@@ -49,7 +53,7 @@ exports.login = async (req, res) => {
       if (err) throw err;
 
       // done
-      res.json({ success: true, user, token });
+      res.json({ success: true, user, token, role });
     });
   } catch (err) {
     // Error handling
@@ -78,9 +82,12 @@ exports.changePassword = async (req, res) => {
     let user = await Users.findById(userId);
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      user = await ServiceProviders.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
     }
 
     const isMatched = bcrypt.compareSync(oldPassword, user.password);
@@ -96,7 +103,7 @@ exports.changePassword = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, user });
+    res.json({ success: true, user, message: "Password changed." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -115,9 +122,12 @@ exports.forgot = async (req, res) => {
     let user = await Users.findOne({ email });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found" });
+      user = await ServiceProviders.findOne({ email });
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
     }
 
     // Generating random password
@@ -169,20 +179,23 @@ exports.verifyOTP = async (req, res) => {
 
     let user = await Users.findById(userId); // find user by id
 
-    if (user) {
-      if (user.otp === otp) {
-        user.otp = null;
-        user.verified = true;
-        user.save();
-        res.json({ success: true, user, message: "Account Verified" });
-      } else {
-        res.status(404).json({ success: false, message: "Invalid OTP" });
+    if (!user) {
+      user = await ServiceProviders.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
-    } else {
-      res
-        .status(404)
-        .json({ success: false, message: "No user found by this ID" });
     }
+
+    if (user.otp !== otp) {
+      return res.status(404).json({ success: false, message: "Invalid OTP" });
+    }
+
+    user.otp = null;
+    user.verified = true;
+    user.save();
+    res.json({ success: true, user, message: "Account Verified." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -201,33 +214,36 @@ exports.resendOtp = async (req, res) => {
 
     let user = await Users.findById(userId); // get user by id
 
-    if (user) {
-      let otp = Math.random().toFixed(4).slice(-4); // Generate random otp
-
-      user.otp = otp; // allot new otp to user
-      user.save(); // save user object
-
-      //! uncomment send otp
-      //TODO: Change Phone number format to french before deploying.
-      // Send OTP message to user phone number
-      // sendOTP(user.phone, otp)
-      //   .then(() => {
-      // On sucess
-      return res.json({
-        success: true,
-        message: "OTP sent",
-        user,
-      }); //Success
-      // })
-      // .catch((err) => {
-      //   // On error
-      //   throw err;
-      // });
-    } else {
-      res
-        .status(404)
-        .json({ success: false, message: "No user found by this ID" });
+    if (!user) {
+      user = await ServiceProviders.findById(userId);
+      if (!user) {
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
+      }
     }
+
+    let otp = Math.random().toFixed(4).slice(-4); // Generate random otp
+
+    user.otp = otp; // allot new otp to user
+    user.save(); // save user object
+
+    //! uncomment send otp
+    //TODO: Change Phone number format to french before production.
+    // Send OTP message to user phone number
+    // sendOTP(user.phone, otp)
+    //   .then(() => {
+    // On success
+    return res.json({
+      success: true,
+      message: "OTP sent",
+      user,
+    }); //Success
+    // })
+    // .catch((err) => {
+    //   // On error
+    //   throw err;
+    // });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

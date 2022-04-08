@@ -41,7 +41,7 @@ exports.create = async (req, res) => {
     // Adding user in db
     await ServiceProviders.create(req.body).then((user) => {
       //! uncomment send otp
-      //TODO: Change Phone number format to french before deploying.
+      //TODO: Change Phone number format to french before production.
       // Sending otp to user
       // sendOTP(phone, otp)
       //   .then(() => {

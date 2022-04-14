@@ -37,6 +37,7 @@ exports.create = async (req, res) => {
     let otp = Math.random().toFixed(4).slice(-4);
     req.body.otp = otp;
     req.body.location = JSON.parse(req.body.location);
+    req.body.culture = JSON.parse(req.body.culture);
 
     // Adding user in db
     await ServiceProviders.create(req.body).then((user) => {

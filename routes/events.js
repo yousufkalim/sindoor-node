@@ -8,7 +8,7 @@ const { upload } = require("../middleware/multer");
 const {
   validateStatus,
   createEventValidate,
-
+  validateJoinEvent,
   isValidated,
 } = require("../middleware/validators");
 const { checkAuth } = require("../middleware/checkAuth");
@@ -33,7 +33,13 @@ router.post(
 );
 
 // Join event via code
-router.put("/join", checkAuth, events.joinEvent);
+router.put(
+  "/join",
+  checkAuth,
+  validateJoinEvent,
+  isValidated,
+  events.joinEvent
+);
 
 // change guest role
 router.put("/role/:eventId/:userId", events.changeRole);

@@ -31,22 +31,25 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    role: {
-      type: String,
-      enum: ["Organizer", "Co-Organizer", "Guest", "ServiceProvider"],
-      default: "Guest",
-    },
     verified: {
       type: Boolean,
       default: false,
     },
     gender: {
       type: String,
-      enum: ["male", "female", "others"],
+      enum: ["male", "female"],
     },
     otp: String,
-    company_name: String, // only if user is ServiceProvider
     photo: String,
+    events: [
+      {
+        event: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "events",
+        },
+        role: String,
+      },
+    ],
   },
   {
     timestamps: true,

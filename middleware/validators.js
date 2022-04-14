@@ -105,21 +105,32 @@ exports.changePasswordValidate = [
 exports.createEventValidate = [
   check("name", "Name is required").notEmpty().trim(),
   check("type", "Type is required").notEmpty().trim(),
-  check("date", "Date is required").notEmpty().trim(),
+  check("start_date", "Date is required").notEmpty().trim(),
   check("start_time", "Start Time is required").notEmpty().trim(),
-  check("end_time", "End Time is required").notEmpty().trim(),
   check("description", "Description is required").notEmpty().trim(),
+];
+
+exports.validateJoinEvent = [
+  check("code", "Event Code is required").notEmpty().trim(),
 ];
 
 exports.validateServiceProvider = [
   check("company_name").notEmpty().withMessage("Company name is required."),
-  check("description").notEmpty().withMessage("Description is required."),
   check("email")
     .notEmpty()
     .withMessage("Email is required.")
     .isEmail()
     .withMessage("Invalid Email address")
     .trim(),
+  check("phone")
+    .notEmpty()
+    .withMessage("Phone number is required.")
+    .isLength(10)
+    .withMessage("Invalid phone number format")
+    .isNumeric()
+    .withMessage("Phone number can only be numeric")
+    .trim(),
+  check("description").notEmpty().withMessage("Description is required."),
   check("password")
     .notEmpty()
     .withMessage("Password is required.")
@@ -132,15 +143,9 @@ exports.validateServiceProvider = [
     .trim()
     .isLength({ min: 8 })
     .withMessage("Password must be minimum 8 characters"),
-  check("phone")
-    .notEmpty()
-    .withMessage("Phone number is required.")
-    .isLength(10)
-    .withMessage("Invalid phone number format")
-    .isNumeric()
-    .withMessage("Phone number can only be numeric")
-    .trim(),
+
   check("location").notEmpty().withMessage("Location is required."),
+  check("culture").notEmpty().withMessage("Culture is required."),
 ];
 /*
 ======================

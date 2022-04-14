@@ -1,9 +1,18 @@
 const { events } = require("../models/Events");
 const Events = require("../models/Events");
+const Users = require("../models/Users");
 
 //* Create and event
 exports.create = async (req, res) => {
   try {
+    let userId = req.user._id;
+    let user = await Users.findById(userId);
+    if (!user) {
+      return res.status(409).json({
+        success: false,
+        message: "Service Provider Cannot create event.",
+      });
+    }
     // Generate a random code
     let code = Math.random().toFixed(10).slice(-10);
     code = code.match(/.{1,3}/g);
@@ -21,11 +30,20 @@ exports.create = async (req, res) => {
     let event = new Events(req.body);
     event.code = code;
     event.location = JSON.parse(req.body.location);
-    event.organizer = req.user._id;
+    event.organizer = userId;
     event.photos = images;
     event.save();
 
-    res.json({ success: true, message: "Event Created", event });
+    let userEvent = {
+      event: event._id,
+      role: "Organizer",
+    };
+
+    // update events array in user data
+    user.events.push(userEvent);
+    user.save();
+
+    res.json({ success: true, message: "Event Created Successfully.", event });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -38,6 +56,13 @@ exports.joinEvent = async (req, res) => {
   try {
     let { code, members } = req.body;
     let userId = req.user._id;
+    let user = await Users.findById(userId);
+    if (!user) {
+      return res.status(409).json({
+        success: false,
+        message: "Service Provider Cannot join event as Guest.",
+      });
+    }
     let event = await Events.findOne({ code });
     if (!event) {
       return res.status(409).json({
@@ -61,7 +86,16 @@ exports.joinEvent = async (req, res) => {
     let guest = { guest: userId, members };
     event.guests.push(guest);
     event.save();
-    //
+
+    let userEvent = {
+      event: event._id,
+      role: "Guest",
+    };
+
+    // update events array in user data
+    user.events.push(userEvent);
+    user.save();
+
     res.json({
       success: true,
       message: "Event joined successfully.",
@@ -102,7 +136,17 @@ exports.changeRole = async (req, res) => {
       },
       { new: true }
     )
-      .then((resp) => {
+      .then(async (resp) => {
+        await Users.findOneAndUpdate(
+          {
+            _id: userId,
+            "events.event": eventId,
+          },
+          {
+            $set: { "events.$.role": role },
+          },
+          { new: true }
+        );
         res.json({
           success: true,
           message: "Guest Status Updated.",

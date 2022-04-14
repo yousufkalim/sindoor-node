@@ -19,17 +19,18 @@ const EventSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  date: {
+  start_date: {
     type: String,
-    required: true,
   },
   start_time: {
     type: String,
     required: true,
   },
+  end_date: {
+    type: String,
+  },
   end_time: {
     type: String,
-    required: true,
   },
   location: {
     name: String,
@@ -82,6 +83,16 @@ const EventSchema = new mongoose.Schema({
         type: Number,
         default: 0,
       },
+    },
+  ],
+  timeline: [
+    {
+      title: String,
+      description: String,
+      StartDate: Date,
+      StartTime: Date,
+      EndDate: Date,
+      EndTime: Date,
     },
   ],
 });

@@ -20,7 +20,7 @@ const serviceProviderSchema = new mongoose.Schema(
       lat: String,
       lng: String,
     },
-    cultures: [],
+    culture: [],
     email: {
       type: String,
       required: true,
@@ -37,6 +37,21 @@ const serviceProviderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    ratings: [
+      {
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "users",
+        },
+        ratings: Number,
+      },
+    ],
+    faqs: [
+      {
+        question: String,
+        answer: String,
+      },
+    ],
     otp: String,
     photo: String,
   },

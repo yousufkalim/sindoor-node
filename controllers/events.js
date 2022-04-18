@@ -1,4 +1,3 @@
-const { events } = require("../models/Events");
 const Events = require("../models/Events");
 const Users = require("../models/Users");
 
@@ -170,6 +169,7 @@ exports.updateGuestStatus = async (req, res) => {
   try {
     let { userId, eventId } = req.params;
     let { status } = req.body;
+    console.log({ userId, eventId });
 
     await Events.findOneAndUpdate(
       {
@@ -204,7 +204,7 @@ exports.getEvents = async (req, res) => {
     let userId = req.user._id;
     let events = await Events.find({
       $or: [{ organizer: userId }, { "guests.guest": userId }],
-    });
+    }).populate("guests.guest", "first_name last_name photo");
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
@@ -247,6 +247,29 @@ exports.updateEvent = async (req, res) => {
       });
     }
     res.json({ success: true, event });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//* Remove Guest from event
+exports.removeGuest = async (req, res) => {
+  try {
+    let { userId, eventId } = req.params;
+
+    await Events.findOneAndUpdate(
+      { _id: eventId },
+      { $pull: { guests: { guest: userId } } }
+    ).then(async () => {
+      await Users.findOneAndUpdate(
+        { _id: userId },
+        { $pull: { events: { event: eventId } } }
+      ).then(() =>
+        res.json({ success: true, message: "User Removed from Event." })
+      );
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

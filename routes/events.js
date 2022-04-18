@@ -22,7 +22,7 @@ const { checkAuth } = require("../middleware/checkAuth");
  * @method delete delete user
  */
 
-//* Get all events of current user
+// Create event.
 router.post(
   "/",
   checkAuth,
@@ -43,6 +43,9 @@ router.put(
 
 // change guest role
 router.put("/role/:eventId/:userId", events.changeRole);
+
+// Remove guest from event
+router.put("/removeGuest/:eventId/:userId", events.removeGuest);
 
 // update guest status
 router.put(

@@ -20,23 +20,16 @@ const EventSchema = new mongoose.Schema({
     required: true,
   },
   start_date: {
-    type: String,
-  },
-  start_time: {
-    type: String,
-    required: true,
+    date: Date,
+    start_time: String,
+    end_time: String,
   },
   end_date: {
-    type: String,
+    date: Date,
+    start_time: String,
+    end_time: String,
   },
-  end_time: {
-    type: String,
-  },
-  location: {
-    name: String,
-    lat: String,
-    lng: String,
-  },
+  location: {},
   description: {
     type: String,
     required: true,
@@ -89,10 +82,10 @@ const EventSchema = new mongoose.Schema({
     {
       title: String,
       description: String,
-      StartDate: Date,
-      StartTime: Date,
-      EndDate: Date,
-      EndTime: Date,
+      start_date: Date,
+      start_time: String,
+      end_date: Date,
+      end_time: String,
     },
   ],
 });

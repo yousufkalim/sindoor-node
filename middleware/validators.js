@@ -76,13 +76,14 @@ exports.validateLogin = [
   check("password", "Password is required.").notEmpty(),
 ];
 
-// Status Validation
-exports.validateStatus = [
-  check("status")
-    .notEmpty()
-    .withMessage("Status is required.")
-    .isIn(["pending", "accepted", "refused"])
-    .withMessage("Invalid status."),
+// Timeline Validation
+exports.validateTimeLine = [
+  check("title").notEmpty().withMessage("Title is required."),
+  check("description").notEmpty().withMessage("Description is required"),
+  check("start_time").notEmpty().withMessage("Start Time is required"),
+  check("start_date").notEmpty().withMessage("Start Date is required"),
+  check("end_time").notEmpty().withMessage("End Time is required"),
+  check("end_date").notEmpty().withMessage("End Date is required"),
 ];
 
 // Change password validation
@@ -105,8 +106,6 @@ exports.changePasswordValidate = [
 exports.createEventValidate = [
   check("name", "Name is required").notEmpty().trim(),
   check("type", "Type is required").notEmpty().trim(),
-  check("start_date", "Date is required").notEmpty().trim(),
-  check("start_time", "Start Time is required").notEmpty().trim(),
   check("description", "Description is required").notEmpty().trim(),
 ];
 

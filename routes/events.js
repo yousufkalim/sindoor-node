@@ -6,7 +6,7 @@ const router = require("express").Router();
 const events = require("../controllers/events");
 const { upload } = require("../middleware/multer");
 const {
-  validateStatus,
+  validateTimeLine,
   createEventValidate,
   validateJoinEvent,
   isValidated,
@@ -48,17 +48,23 @@ router.put("/role/:eventId/:userId", events.changeRole);
 router.put("/removeGuest/:eventId/:userId", events.removeGuest);
 
 // update guest status
-router.put(
-  "/status/:eventId/:userId",
-  validateStatus,
-  isValidated,
-  events.updateGuestStatus
-);
+router.put("/status/:eventId/:userId", events.updateGuestStatus);
 
 // Update Event
 router.put("/:eventId", upload.array("photos"), checkAuth, events.updateEvent);
 
-// Get All events as guest / organizer
-router.get("/", checkAuth, events.getEvents);
+// Crete event timeline
+router.post(
+  "/:eventId/timeline",
+  validateTimeLine,
+  isValidated,
+  events.createTimeline
+);
+
+// Get Upcoming events
+router.get("/", checkAuth, events.getUpcomingEvents);
+
+// Get Past events
+router.get("/past", checkAuth, events.getPastEvents);
 
 module.exports = router;

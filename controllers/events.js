@@ -29,6 +29,10 @@ exports.create = async (req, res) => {
     let event = new Events(req.body);
     event.code = code;
     event.location = JSON.parse(req.body.location);
+    event.start_date = JSON.parse(req.body.start_date);
+    if (req.body.end_date !== "undefined") {
+      event.end_date = JSON.parse(req.body.end_date);
+    }
     event.organizer = userId;
     event.photos = images;
     event.save();
@@ -177,7 +181,7 @@ exports.updateGuestStatus = async (req, res) => {
         "guests.guest": userId,
       },
       {
-        $set: { "guests.$.status": status },
+        $set: { "guests.$.status": "accepted" },
       },
       { new: true }
     )
@@ -198,13 +202,34 @@ exports.updateGuestStatus = async (req, res) => {
   }
 };
 
-//* get events
-exports.getEvents = async (req, res) => {
+//* get upcoming events
+exports.getUpcomingEvents = async (req, res) => {
   try {
     let userId = req.user._id;
     let events = await Events.find({
       $or: [{ organizer: userId }, { "guests.guest": userId }],
-    }).populate("guests.guest", "first_name last_name photo");
+      "start_date.date": { $gte: new Date() },
+    })
+      .sort({ "start_date.date": 1 })
+      .populate("guests.guest", "first_name last_name photo");
+    res.json({ success: true, events });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//* get past events
+exports.getPastEvents = async (req, res) => {
+  try {
+    let userId = req.user._id;
+    let events = await Events.find({
+      $or: [{ organizer: userId }, { "guests.guest": userId }],
+      "start_date.date": { $lte: new Date() },
+    })
+      .sort({ "start_date.date": 1 })
+      .populate("guests.guest", "first_name last_name photo");
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
@@ -227,7 +252,13 @@ exports.updateEvent = async (req, res) => {
       });
     }
 
-    body.photos = images;
+    body.photos = [...JSON.parse(body.photos), ...images];
+
+    body.location = JSON.parse(body.location);
+    body.start_date = JSON.parse(body.start_date);
+    if (req.body.end_date !== "undefined") {
+      body.end_date = JSON.parse(body.end_date);
+    }
 
     let event = await Events.findOneAndUpdate(
       {
@@ -246,7 +277,8 @@ exports.updateEvent = async (req, res) => {
         message: "Event not found.",
       });
     }
-    res.json({ success: true, event });
+
+    res.json({ success: true, message: "Event updated.", event });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -270,6 +302,27 @@ exports.removeGuest = async (req, res) => {
         res.json({ success: true, message: "User Removed from Event." })
       );
     });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//* Create event timeline
+exports.createTimeline = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    let event = await Events.findById(eventId);
+    let { body } = req;
+    if (!event) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Event not found!" });
+    }
+    event.timeline.push(body);
+    event.save();
+    res.json({ body, event, message: "Timeline Create Successfully!" });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

@@ -1,5 +1,6 @@
 const Events = require("../models/Events");
 const Users = require("../models/Users");
+const Wishlists = require("../models/Wishlists");
 
 //* Create and event
 exports.create = async (req, res) => {
@@ -322,7 +323,47 @@ exports.createTimeline = async (req, res) => {
     }
     event.timeline.push(body);
     event.save();
-    res.json({ body, event, message: "Timeline Create Successfully!" });
+    res.json({ event, message: "Timeline Create Successfully!" });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Get Wishlist
+exports.wishlists = async (req, res) => {
+  try {
+    const { eventId } = req.params;
+    let wishlist = await Wishlists.find({ event: eventId });
+
+    res.json({ wishlist });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Create wishlist
+exports.CreateWishlists = async (req, res) => {
+  try {
+    const { eventId } = req.body;
+
+    let event = await Events.findById(eventId);
+    if (!event) {
+      return res.status(400).json({ message: "Event not found." });
+    }
+
+    if (req.file) {
+      req.body.image = req.file.path;
+    }
+
+    req.body.event = eventId;
+
+    let wishlist = await Wishlists.create(req.body);
+
+    res.json({ success: true, wishlist, message: "Wishlist created." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

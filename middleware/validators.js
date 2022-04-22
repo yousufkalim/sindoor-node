@@ -78,8 +78,8 @@ exports.validateLogin = [
 
 // Timeline Validation
 exports.validateTimeLine = [
-  check("title").notEmpty().withMessage("Title is required."),
-  check("description").notEmpty().withMessage("Description is required"),
+  check("title").notEmpty().withMessage("Title is required.").trim(),
+  check("description").notEmpty().withMessage("Description is required").trim(),
   check("start_time").notEmpty().withMessage("Start Time is required"),
   check("start_date").notEmpty().withMessage("Start Date is required"),
   check("end_time").notEmpty().withMessage("End Time is required"),
@@ -106,6 +106,19 @@ exports.changePasswordValidate = [
 exports.createEventValidate = [
   check("name", "Name is required").notEmpty().trim(),
   check("type", "Type is required").notEmpty().trim(),
+  check("description", "Description is required").notEmpty().trim(),
+];
+
+// Create event validation
+exports.validateWishlist = [
+  check("eventId", "Event ID is required").notEmpty(),
+  check("name", "Name is required").notEmpty().trim(),
+  check("price")
+    .notEmpty()
+    .withMessage("Price is required")
+    .isNumeric()
+    .withMessage("Price can only be numeric")
+    .trim(),
   check("description", "Description is required").notEmpty().trim(),
 ];
 

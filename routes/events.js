@@ -6,6 +6,7 @@ const router = require("express").Router();
 const events = require("../controllers/events");
 const { upload } = require("../middleware/multer");
 const {
+  validateWishlist,
   validateTimeLine,
   createEventValidate,
   validateJoinEvent,
@@ -59,6 +60,18 @@ router.post(
   validateTimeLine,
   isValidated,
   events.createTimeline
+);
+
+// Get wishlists of event
+router.get("/:eventId/wishlists", events.wishlists);
+
+// Create wishlists of event
+router.post(
+  "/wishlists",
+  upload.single("image"),
+  validateWishlist,
+  isValidated,
+  events.CreateWishlists
 );
 
 // Get Upcoming events

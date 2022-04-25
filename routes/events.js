@@ -10,6 +10,7 @@ const {
   validateTimeLine,
   createEventValidate,
   validateJoinEvent,
+  validatePayment,
   isValidated,
 } = require("../middleware/validators");
 const { checkAuth } = require("../middleware/checkAuth");
@@ -72,6 +73,18 @@ router.post(
   validateWishlist,
   isValidated,
   events.CreateWishlists
+);
+
+// Delete wishlist Item
+router.delete("/wishlists/:itemId", events.deleteWishlistItem);
+
+// pay amount
+router.post(
+  "/wishlists/:itemId",
+  checkAuth,
+  validatePayment,
+  isValidated,
+  events.payAmount
 );
 
 // Get Upcoming events

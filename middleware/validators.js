@@ -108,6 +108,16 @@ exports.createEventValidate = [
   check("type", "Type is required").notEmpty().trim(),
   check("description", "Description is required").notEmpty().trim(),
 ];
+// Payment validation
+exports.validatePayment = [
+  check("amount")
+    .notEmpty()
+    .withMessage("Payment amount is required.")
+    .isNumeric()
+    .withMessage("Payment must be numeric.")
+    .isFloat({ min: 0 })
+    .withMessage("Payment cannot be negative"),
+];
 
 // Create event validation
 exports.validateWishlist = [

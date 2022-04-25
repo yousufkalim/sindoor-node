@@ -335,9 +335,38 @@ exports.createTimeline = async (req, res) => {
 exports.wishlists = async (req, res) => {
   try {
     const { eventId } = req.params;
-    let wishlist = await Wishlists.find({ event: eventId });
+    let { sort } = req.query;
+    sort = sort === "true";
+    let wishlist = await Wishlists.find({ event: eventId }).populate(
+      "paid.user",
+      "first_name last_name photo"
+    );
 
-    res.json({ wishlist });
+    // calcs
+    wishlist.forEach((item, index) => {
+      let sum = item.paid.reduce((prev, cur) => {
+        return prev + cur.amount;
+      }, 0);
+
+      let remaining_amount = item.price - sum;
+
+      wishlist[index] = {
+        ...item._doc,
+        sum,
+        remaining_amount: remaining_amount.toFixed(2),
+      };
+    });
+
+    // sort
+    wishlist.sort((a, b) => {
+      if (sort) {
+        return a.remaining_amount - b.remaining_amount;
+      } else {
+        return b.remaining_amount - a.remaining_amount;
+      }
+    });
+
+    res.json({ success: true, wishlist, sort });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -364,6 +393,41 @@ exports.CreateWishlists = async (req, res) => {
     let wishlist = await Wishlists.create(req.body);
 
     res.json({ success: true, wishlist, message: "Wishlist created." });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.deleteWishlistItem = async (req, res) => {
+  try {
+    let { itemId } = req.params;
+    await Wishlists.findByIdAndDelete(itemId).then(() => {
+      res.json({ success: true, message: "Item deleted." });
+    });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.payAmount = async (req, res) => {
+  try {
+    let { itemId } = req.params;
+    let { amount } = req.body;
+    let user = req.user._id;
+    let item = await Wishlists.findById(itemId);
+    if (!item) {
+      return res
+        .status(404)
+        .json({ success: false, message: "No Item found." });
+    }
+    item.paid.push({ amount, user });
+    item.save();
+
+    res.json({ success: true, message: "Payment Successful." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

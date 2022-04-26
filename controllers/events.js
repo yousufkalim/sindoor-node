@@ -227,7 +227,7 @@ exports.getPastEvents = async (req, res) => {
     let userId = req.user._id;
     let events = await Events.find({
       $or: [{ organizer: userId }, { "guests.guest": userId }],
-      "start_date.date": { $lte: new Date() },
+      "start_date.date": { $lt: new Date() },
     })
       .sort({ "start_date.date": 1 })
       .populate("guests.guest", "first_name last_name photo");
@@ -259,6 +259,8 @@ exports.updateEvent = async (req, res) => {
     body.start_date = JSON.parse(body.start_date);
     if (req.body.end_date !== "undefined") {
       body.end_date = JSON.parse(body.end_date);
+    } else {
+      body.end_date = undefined;
     }
 
     let event = await Events.findOneAndUpdate(

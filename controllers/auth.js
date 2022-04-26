@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
     const payload = { user };
 
     // Generating token
-    jwt.sign(payload, tokenSecret, { expiresIn: 360000 }, (err, token) => {
+    jwt.sign(payload, tokenSecret, { expiresIn: "30d" }, (err, token) => {
       if (err) throw err;
 
       // done

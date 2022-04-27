@@ -64,13 +64,25 @@ exports.create = async (req, res) => {
 };
 
 /**
- * Get User
+ * Get Service Providers
  * @param {object} req
  * @param {object} res
  */
-exports.getAll = async (req, res) => {
+exports.getFew = async (req, res) => {
   try {
-    let serviceProviders = await ServiceProviders.find();
+    let serviceProviders = await ServiceProviders.aggregate([
+      {
+        $sample: { size: 10 },
+      },
+      {
+        $project: {
+          _id: 1,
+          company_name: 1,
+          "location.city": 1,
+          photo: 1,
+        },
+      },
+    ]);
     res.json({ success: true, users: serviceProviders });
   } catch (err) {
     // Error handling
@@ -79,7 +91,7 @@ exports.getAll = async (req, res) => {
   }
 };
 /**
- * Get User By id
+ ** Get User By id
  * @param {object} req
  * @param {object} res
  */
@@ -87,7 +99,18 @@ exports.getById = async (req, res) => {
   try {
     let { userId } = req.params;
     let serviceProvider = await ServiceProviders.findById(userId);
-    res.json({ success: true, user: serviceProvider });
+    let ratingsSum = serviceProvider.ratings.reduce(
+      (prev, cnt) => prev + cnt.rating,
+      0
+    );
+    let rating = (ratingsSum / (serviceProvider.ratings.length || 1)).toFixed(
+      1
+    );
+
+    res.json({
+      success: true,
+      user: { ...serviceProvider._doc, rating },
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

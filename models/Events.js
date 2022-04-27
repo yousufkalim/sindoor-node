@@ -29,7 +29,14 @@ const EventSchema = new mongoose.Schema({
     start_time: String,
     end_time: String,
   },
-  location: {},
+  location: {
+    label: String,
+    label2: String,
+    city: String,
+    PostalCode: String,
+    lat: Number,
+    lng: Number,
+  },
   description: {
     type: String,
     required: true,

@@ -16,9 +16,12 @@ const serviceProviderSchema = new mongoose.Schema(
       required: true,
     },
     location: {
-      name: String,
-      lat: String,
-      lng: String,
+      label: String,
+      label2: String,
+      city: String,
+      PostalCode: String,
+      lat: Number,
+      lng: Number,
     },
     culture: [],
     email: {
@@ -43,13 +46,22 @@ const serviceProviderSchema = new mongoose.Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "users",
         },
-        ratings: Number,
+        rating: Number,
+        comment: String,
       },
     ],
     faqs: [
       {
         question: String,
         answer: String,
+      },
+    ],
+    services: [
+      {
+        service: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "services",
+        },
       },
     ],
     otp: String,

@@ -98,7 +98,9 @@ exports.getFew = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     let { userId } = req.params;
-    let serviceProvider = await ServiceProviders.findById(userId);
+    let serviceProvider = await ServiceProviders.findById(userId).populate(
+      "services.service"
+    );
     let ratingsSum = serviceProvider.ratings.reduce(
       (prev, cnt) => prev + cnt.rating,
       0

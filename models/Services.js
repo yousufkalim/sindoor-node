@@ -19,19 +19,28 @@ const serviceSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    pictures: [],
-    amount: {
+    photos: [],
+    location: {
+      label: String,
+      label2: String,
+      city: String,
+      PostalCode: String,
+      lat: Number,
+      lng: Number,
+    },
+    price: {
       type: Number,
       required: true,
     },
-    deposit_amount: {
-      type: Number,
+    deposit: {
+      type: String,
       required: true,
     },
     category: {
       type: String,
       require: true,
     },
+    phone: String,
   },
   {
     timestamps: true,

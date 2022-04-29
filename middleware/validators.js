@@ -139,19 +139,19 @@ exports.validateJoinEvent = [
 exports.validateServiceProvider = [
   check("company_name").notEmpty().withMessage("Company name is required."),
   check("email")
+    .trim()
     .notEmpty()
     .withMessage("Email is required.")
     .isEmail()
-    .withMessage("Invalid Email address")
-    .trim(),
+    .withMessage("Invalid Email address"),
   check("phone")
+    .trim()
     .notEmpty()
     .withMessage("Phone number is required.")
     .isLength({ min: 10, max: 10 })
     .withMessage("Invalid phone number format")
     .isNumeric()
-    .withMessage("Phone number can only be numeric")
-    .trim(),
+    .withMessage("Phone number can only be numeric"),
   check("description").notEmpty().withMessage("Description is required."),
   check("password")
     .notEmpty()
@@ -169,6 +169,29 @@ exports.validateServiceProvider = [
   check("location").notEmpty().withMessage("Location is required."),
   check("culture").notEmpty().withMessage("Culture is required."),
 ];
+
+exports.validateService = [
+  check("category").notEmpty().withMessage("Category of service is required."),
+  check("name").notEmpty().withMessage("Name of service is required."),
+  check("price").notEmpty().withMessage("Price of service is required."),
+  check("deposit").notEmpty().withMessage("Deposit of service is required."),
+  check("fixed_amount")
+    .notEmpty()
+    .withMessage("Fixed Amount of service is required."),
+  check("phone")
+    .trim()
+    .notEmpty()
+    .withMessage("Phone number is required.")
+    .isLength({ min: 10, max: 10 })
+    .withMessage("Invalid phone number format")
+    .isNumeric()
+    .withMessage("Phone number can only be numeric"),
+  check("location").notEmpty().withMessage("Location of service is required."),
+  check("description")
+    .notEmpty()
+    .withMessage("Description of service is required."),
+];
+
 /*
 ======================
 Result

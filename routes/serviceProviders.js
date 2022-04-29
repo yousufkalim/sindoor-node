@@ -30,7 +30,7 @@ router.post(
 );
 
 // Read
-router.get("/", serviceProviders.getAll); // Get all users at once
+router.get("/", serviceProviders.getFew); // Get Few users at once
 router.get("/:userId", serviceProviders.getById); // Get one user by it's id
 
 // Update

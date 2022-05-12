@@ -98,6 +98,9 @@ router.post(
 router.get("/pictures/:eventId", events.getPicturesNeedApproval);
 
 // change image status
+router.put("/pictures/:eventId", events.approveAllImages);
+
+// change image status
 router.put("/pictures/:pictureId/status", events.changePictureStatus);
 
 // get pictures approved

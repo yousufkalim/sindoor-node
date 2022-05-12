@@ -492,7 +492,9 @@ exports.getPicturesNeedApproval = async (req, res) => {
     let pictures = await Pictures.find({
       event: eventId,
       status: "pending",
-    }).populate("from", "first_name last_name photo");
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
     res.json({ pictures });
   } catch (err) {
     // Error handling
@@ -507,7 +509,9 @@ exports.getApprovedPictures = async (req, res) => {
     let pictures = await Pictures.find({
       event: eventId,
       status: "approved",
-    }).populate("from", "first_name last_name photo");
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
     res.json({ pictures });
   } catch (err) {
     // Error handling
@@ -550,7 +554,9 @@ exports.getLikedPictures = async (req, res) => {
     let pictures = await Pictures.find({
       event: eventId,
       "likes.user": userId,
-    }).populate("from", "first_name last_name photo");
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
     res.json({ pictures });
   } catch (err) {
     // Error handling
@@ -588,6 +594,27 @@ exports.likePicture = async (req, res) => {
 
       return res.json({ picture, message: "Image liked." });
     }
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.approveAllImages = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    await Pictures.updateMany(
+      {
+        event: eventId,
+        status: "pending",
+      },
+      {
+        $set: { status: "approved" },
+      }
+    ).then(() => {
+      return res.json({ success: true, message: "Images Approved." });
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

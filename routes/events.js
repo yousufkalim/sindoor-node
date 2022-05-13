@@ -87,10 +87,38 @@ router.post(
   events.payAmount
 );
 
+// upload pictures
+router.post(
+  "/pictures/:eventId",
+  upload.array("pictures"),
+  events.uploadPictures
+);
+
+// get not approved pictures
+router.get("/pictures/:eventId", events.getPicturesNeedApproval);
+
+// change image status
+router.put("/pictures/:eventId", events.approveAllImages);
+
+// change image status
+router.put("/pictures/:pictureId/status", events.changePictureStatus);
+
+// get pictures approved
+router.get("/pictures/:eventId/approved", events.getApprovedPictures);
+
+// get favorite pictures
+router.get("/pictures/:eventId/:userId", events.getLikedPictures);
+
+// Like picture
+router.patch("/pictures/:pictureId/:userId", events.likePicture);
+
 // Get Upcoming events
 router.get("/", checkAuth, events.getUpcomingEvents);
 
 // Get Past events
 router.get("/past", checkAuth, events.getPastEvents);
+
+// Get event by id
+router.get("/:eventId", events.getEventByID);
 
 module.exports = router;

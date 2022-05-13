@@ -1,6 +1,8 @@
 const Events = require("../models/Events");
+const Pictures = require("../models/Pictures");
 const Users = require("../models/Users");
 const Wishlists = require("../models/Wishlists");
+const fs = require("fs"); // to delete images
 
 //* Create and event
 exports.create = async (req, res) => {
@@ -209,7 +211,10 @@ exports.getUpcomingEvents = async (req, res) => {
     let userId = req.user._id;
     let events = await Events.find({
       $or: [{ organizer: userId }, { "guests.guest": userId }],
-      "start_date.date": { $gte: new Date() },
+      $or: [
+        { "end_date.date": { $gte: new Date() } },
+        { "start_date.date": { $gte: new Date() } },
+      ],
     })
       .sort({ "start_date.date": 1 })
       .populate("guests.guest", "first_name last_name photo");
@@ -232,6 +237,21 @@ exports.getPastEvents = async (req, res) => {
       .sort({ "start_date.date": 1 })
       .populate("guests.guest", "first_name last_name photo");
     res.json({ success: true, events });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//* get past events
+exports.getEventByID = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+
+    let event = await Events.findById(eventId);
+
+    res.json({ success: true, event });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -430,6 +450,171 @@ exports.payAmount = async (req, res) => {
     item.save();
 
     res.json({ success: true, message: "Payment Successful." });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.uploadPictures = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    let { from } = req.body;
+    let pictures = [];
+    if (req.files) {
+      req.files.forEach((picture) => {
+        let doc = {
+          event: eventId,
+          picture: picture.path,
+          from: from,
+        };
+        pictures.push(doc);
+      });
+    }
+    Pictures.insertMany(pictures)
+      .then(() => {
+        res.json({ message: "Pictures Uploaded.", success: true });
+      })
+      .catch((err) => {
+        throw err;
+      });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getPicturesNeedApproval = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    let pictures = await Pictures.find({
+      event: eventId,
+      status: "pending",
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
+    res.json({ pictures });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getApprovedPictures = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    let pictures = await Pictures.find({
+      event: eventId,
+      status: "approved",
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
+    res.json({ pictures });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.changePictureStatus = async (req, res) => {
+  try {
+    let { pictureId } = req.params;
+    let { status } = req.body;
+    let picture = await Pictures.findById(pictureId);
+    if (status === "approved") {
+      //update
+      picture.status = status;
+      picture.save();
+      return res.json({ message: "Image approved." });
+    } else {
+      // delete
+      fs.unlink(picture.picture, async (err) => {
+        if (err) {
+          console.log(err, "err");
+        } else {
+          await Pictures.findByIdAndDelete(pictureId);
+        }
+      });
+      return res.json({ message: "Image Deleted." });
+    }
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getLikedPictures = async (req, res) => {
+  try {
+    let { eventId, userId } = req.params;
+    let pictures = await Pictures.find({
+      event: eventId,
+      "likes.user": userId,
+    })
+      .populate("from", "first_name last_name photo")
+      .sort({ createdAt: -1 });
+    res.json({ pictures });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.likePicture = async (req, res) => {
+  try {
+    let { pictureId, userId } = req.params;
+    let picture = await Pictures.findById(pictureId);
+
+    // check if already liked then remove like
+
+    let alreadyLiked = await Pictures.findOne({
+      _id: pictureId,
+      "likes.user": userId,
+    });
+    if (alreadyLiked) {
+      //dislike
+      await Pictures.findByIdAndUpdate(
+        pictureId,
+        {
+          $pull: { likes: { user: userId } },
+        },
+        { new: true }
+      ).then((resp) => {
+        return res.json({ picture: resp, message: "Like Removed." });
+      });
+    } else {
+      // like
+      picture.likes.push({ user: userId });
+      picture.save();
+
+      return res.json({ picture, message: "Image liked." });
+    }
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.approveAllImages = async (req, res) => {
+  try {
+    let { eventId } = req.params;
+    await Pictures.updateMany(
+      {
+        event: eventId,
+        status: "pending",
+      },
+      {
+        $set: { status: "approved" },
+      }
+    ).then(() => {
+      return res.json({ success: true, message: "Images Approved." });
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

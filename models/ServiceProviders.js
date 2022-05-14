@@ -64,6 +64,10 @@ const serviceProviderSchema = new mongoose.Schema(
         },
       },
     ],
+    online: {
+      type: Boolean,
+      default: true,
+    },
     otp: String,
     photo: String,
   },

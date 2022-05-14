@@ -50,6 +50,10 @@ const userSchema = new mongoose.Schema(
         role: String,
       },
     ],
+    online: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

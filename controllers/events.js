@@ -210,10 +210,16 @@ exports.getUpcomingEvents = async (req, res) => {
   try {
     let userId = req.user._id;
     let events = await Events.find({
-      $or: [{ organizer: userId }, { "guests.guest": userId }],
-      $or: [
-        { "end_date.date": { $gte: new Date() } },
-        { "start_date.date": { $gte: new Date() } },
+      $and: [
+        {
+          $or: [{ organizer: userId }, { "guests.guest": userId }],
+        },
+        {
+          $or: [
+            { "end_date.date": { $gte: new Date() } },
+            { "start_date.date": { $gte: new Date() } },
+          ],
+        },
       ],
     })
       .sort({ "start_date.date": 1 })
@@ -231,8 +237,17 @@ exports.getPastEvents = async (req, res) => {
   try {
     let userId = req.user._id;
     let events = await Events.find({
-      $or: [{ organizer: userId }, { "guests.guest": userId }],
-      "start_date.date": { $lt: new Date() },
+      $and: [
+        {
+          $or: [{ organizer: userId }, { "guests.guest": userId }],
+        },
+        {
+          $or: [
+            { "end_date.date": { $lt: new Date() } },
+            { "start_date.date": { $lt: new Date() } },
+          ],
+        },
+      ],
     })
       .sort({ "start_date.date": 1 })
       .populate("guests.guest", "first_name last_name photo");

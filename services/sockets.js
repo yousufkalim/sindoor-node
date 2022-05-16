@@ -5,15 +5,23 @@
 
 const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
+const Chats = require("../models/Chats");
 
 module.exports = (io) => {
   // Socket
   io.on("connection", (socket) => {
     console.log("User connected to socket ;)");
     //
-    socket.on("message", (data) => {
-      console.log(data.to);
-      socket.broadcast.emit("listener", data);
+    socket.on("message", async (data) => {
+      const { chatId, message, to } = data;
+      let chat = await Chats.findById(chatId);
+      console.log(to, "Send sockets");
+      if (chat) {
+        chat.messages.push(message);
+        chat.last = message.date;
+        chat.save();
+      }
+      socket.broadcast.emit(`listener${to}`, data);
     });
 
     socket.on("online", async (data) => {

@@ -15,13 +15,34 @@ module.exports = (io) => {
     socket.on("message", async (data) => {
       const { chatId, message, to } = data;
       let chat = await Chats.findById(chatId);
-      console.log(to, "Send sockets");
       if (chat) {
         chat.messages.push(message);
         chat.last = message.date;
         chat.save();
       }
-      socket.broadcast.emit(`listener${to}`, data);
+      socket.broadcast.emit(`listener${to}`, message);
+    });
+
+    socket.on("seen", async (data) => {
+      await Chats.findOneAndUpdate(
+        {
+          _id: data.chatId,
+        },
+        {
+          $set: {
+            "messages.$[msg].seen": "seen",
+          },
+        },
+        {
+          arrayFilters: [
+            {
+              "msg.from": {
+                $ne: data.userId,
+              },
+            },
+          ],
+        }
+      );
     });
 
     socket.on("online", async (data) => {

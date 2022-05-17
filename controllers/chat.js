@@ -4,7 +4,9 @@ const ServiceProviders = require("../models/ServiceProviders");
 
 exports.getChatData = async (req, res) => {
   try {
-    let { chatId, userId, myId } = req.query;
+    let { chatId, userId, myId, page } = req.query;
+    if (!page) page = 1;
+    console.log(page, "page");
     if (chatId) {
       // Only Get Data.
       let chat = await Chats.findById(chatId).populate(

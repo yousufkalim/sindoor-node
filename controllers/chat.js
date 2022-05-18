@@ -5,47 +5,62 @@ const ServiceProviders = require("../models/ServiceProviders");
 exports.getChatData = async (req, res) => {
   try {
     let { chatId, userId, myId, page } = req.query;
-    if (!page) page = 1;
-    console.log(page, "page");
+
+    if (!page) page = 0; //? on first request if there is no page number
+    let limit = 50; //? limit 50 messages per request
+    let skip = +page * limit; //? skip multiple of page to 50 on every request
+    let nextPage = +page + 1; //? next page number
+
     if (chatId) {
       // Only Get Data.
-      let chat = await Chats.findById(chatId).populate(
-        "serviceProvider users.user",
-        "first_name last_name photo company_name online"
-      );
-
-      return res.json({ chat });
-    } else if (userId && myId) {
-      // check if user have chat created
-      let alreadyChat = await Chats.findOne({
-        $and: [
-          {
-            $or: [
-              {
-                serviceProvider: myId,
-              },
-              {
-                "users.user": myId,
-              },
-            ],
-          },
-          {
-            $or: [
-              {
-                serviceProvider: userId,
-              },
-              {
-                "users.user": userId,
-              },
-            ],
-          },
-        ],
+      let chat = await Chats.findById(chatId, {
+        messages: {
+          $slice: [skip, limit],
+        },
       }).populate(
         "serviceProvider users.user",
         "first_name last_name photo company_name online"
       );
+
+      return res.json({ chat, nextPage, page });
+    } else if (userId && myId) {
+      // check if user have chat created
+      let alreadyChat = await Chats.findOne(
+        {
+          $and: [
+            {
+              $or: [
+                {
+                  serviceProvider: myId,
+                },
+                {
+                  "users.user": myId,
+                },
+              ],
+            },
+            {
+              $or: [
+                {
+                  serviceProvider: userId,
+                },
+                {
+                  "users.user": userId,
+                },
+              ],
+            },
+          ],
+        },
+        {
+          messages: {
+            $slice: [skip, limit],
+          },
+        }
+      ).populate(
+        "serviceProvider users.user",
+        "first_name last_name photo company_name online"
+      );
       if (alreadyChat) {
-        return res.json({ chat: alreadyChat });
+        return res.json({ chat: alreadyChat, nextPage, page });
       } else {
         // Create Chat and get Data
 
@@ -99,7 +114,7 @@ exports.getAllChats = async (req, res) => {
       },
       {
         // Get last message only.
-        messages: { $slice: -1 },
+        messages: { $slice: 1 },
       }
     )
       .sort({ last: -1 })

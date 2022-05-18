@@ -14,16 +14,18 @@ module.exports = (io) => {
     //
     socket.on("message", async (data) => {
       const { chatId, message, to } = data;
+      socket.broadcast.emit(`listener${to}`, message);
+      socket.broadcast.emit(`message${chatId}`, { ...message, seen: "sent" });
       let chat = await Chats.findById(chatId);
       if (chat) {
-        chat.messages.push(message);
+        chat.messages = [message].concat(chat.messages);
         chat.last = message.date;
         chat.save();
       }
-      socket.broadcast.emit(`listener${to}`, message);
     });
 
     socket.on("seen", async (data) => {
+      socket.broadcast.emit(`seen${data.userId}`, { userId: data.userId });
       await Chats.findOneAndUpdate(
         {
           _id: data.chatId,
@@ -47,6 +49,11 @@ module.exports = (io) => {
 
     socket.on("online", async (data) => {
       //change user status to online
+      // send Online socket to user
+      socket.broadcast.emit(`status${data.userId}`, {
+        online: true,
+      });
+      // change online status in db.
       let user = await Users.findById(data.userId);
       if (user) {
         //   update user status
@@ -63,6 +70,11 @@ module.exports = (io) => {
     });
     socket.on("offline", async (data) => {
       // change user status to offline
+      // send Online socket to user
+      socket.broadcast.emit(`status${data.userId}`, {
+        online: false,
+      });
+      // change online status in db.
       let user = await Users.findById(data.userId);
       if (user) {
         //   update user status

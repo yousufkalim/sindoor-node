@@ -15,7 +15,7 @@ module.exports = (io) => {
     socket.on("message", async (data) => {
       const { chatId, message, to } = data;
       socket.broadcast.emit(`listener${to}`, message);
-      socket.broadcast.emit(`message${chatId}`, { ...message, seen: "sent" });
+      io.sockets.emit(`message${chatId}`, { ...message, seen: "sent" });
       let chat = await Chats.findById(chatId);
       if (chat) {
         chat.messages = [message].concat(chat.messages);

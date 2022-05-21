@@ -90,6 +90,7 @@ exports.getFew = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 /**
  ** Get User By id
  * @param {object} req

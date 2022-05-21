@@ -50,6 +50,7 @@ const userSchema = new mongoose.Schema(
         role: String,
       },
     ],
+    favorites: [],
     online: {
       type: Boolean,
       default: false,

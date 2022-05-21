@@ -112,8 +112,11 @@ router.get("/pictures/:eventId/:userId", events.getLikedPictures);
 // Like picture
 router.patch("/pictures/:pictureId/:userId", events.likePicture);
 
-// Get Upcoming events
-router.get("/", checkAuth, events.getUpcomingEvents);
+// Get 10 Upcoming events
+router.get("/", checkAuth, events.getFewUpcomingEvents);
+
+// Get all Upcoming events
+router.get("/all", checkAuth, events.getUpcomingEvents);
 
 // Get Past events
 router.get("/past", checkAuth, events.getPastEvents);

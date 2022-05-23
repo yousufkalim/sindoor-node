@@ -18,7 +18,8 @@ module.exports = (io) => {
       io.sockets.emit(`message${chatId}`, { ...message, seen: "sent" });
       let chat = await Chats.findById(chatId);
       if (chat) {
-        chat.messages = [message].concat(chat.messages);
+        chat.messages.push(message);
+        // = [message].concat(chat.messages);
         chat.last = message.date;
         chat.save();
       }

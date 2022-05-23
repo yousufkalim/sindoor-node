@@ -9,7 +9,7 @@ const serviceSchema = new mongoose.Schema(
   {
     serviceProvider: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "serviceProvider",
+      ref: "serviceProviders",
     },
     name: {
       type: String,

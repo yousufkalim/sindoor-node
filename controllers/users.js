@@ -85,7 +85,10 @@ exports.getAll = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     const userId = req.params.userId; // Getting user id from URL parameter
-    const user = await Users.findById(userId); // Finding user by id
+    let user = await Users.findById(userId); // Finding user by id
+    if (!user) {
+      user = await ServiceProviders.findById(userId);
+    }
     res.json({ success: true, user }); // Success
   } catch (err) {
     // Error handling
@@ -185,7 +188,7 @@ exports.getFavorites = async (req, res) => {
     //   {
     //     $match: {
     //       _id: {
-    //         $in: ["6268f59e63f6491dad84319c", "6268e01383127e0e537ae334"],
+    //         $in: [...user.favorites],
     //       },
     //     },
     //   },

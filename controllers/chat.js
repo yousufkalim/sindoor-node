@@ -13,11 +13,7 @@ exports.getChatData = async (req, res) => {
 
     if (chatId) {
       // Only Get Data.
-      let chat = await Chats.findById(chatId, {
-        messages: {
-          $slice: [skip, limit],
-        },
-      }).populate(
+      let chat = await Chats.findById(chatId).populate(
         "serviceProvider users.user",
         "first_name last_name photo company_name online"
       );
@@ -49,12 +45,12 @@ exports.getChatData = async (req, res) => {
               ],
             },
           ],
-        },
-        {
-          messages: {
-            $slice: [skip, limit],
-          },
         }
+        // {
+        //   messages: {
+        //     $slice: [skip, limit],
+        //   },
+        // }
       ).populate(
         "serviceProvider users.user",
         "first_name last_name photo company_name online"

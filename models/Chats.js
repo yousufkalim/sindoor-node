@@ -42,6 +42,7 @@ const ChatSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 

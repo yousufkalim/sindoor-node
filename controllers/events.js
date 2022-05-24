@@ -205,6 +205,34 @@ exports.updateGuestStatus = async (req, res) => {
   }
 };
 
+//* get few upcoming events
+exports.getFewUpcomingEvents = async (req, res) => {
+  try {
+    let userId = req.user._id;
+    let events = await Events.find({
+      $and: [
+        {
+          $or: [{ organizer: userId }, { "guests.guest": userId }],
+        },
+        {
+          $or: [
+            { "end_date.date": { $gte: new Date() } },
+            { "start_date.date": { $gte: new Date() } },
+          ],
+        },
+      ],
+    })
+      .sort({ "start_date.date": 1 })
+      .limit(10)
+      .populate("guests.guest", "first_name last_name photo");
+    res.json({ success: true, events });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 //* get upcoming events
 exports.getUpcomingEvents = async (req, res) => {
   try {
@@ -264,7 +292,10 @@ exports.getEventByID = async (req, res) => {
   try {
     let { eventId } = req.params;
 
-    let event = await Events.findById(eventId);
+    let event = await Events.findById(eventId).populate(
+      "guests.guest",
+      "first_name last_name photo"
+    );
 
     res.json({ success: true, event });
   } catch (err) {

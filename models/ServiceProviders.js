@@ -24,6 +24,7 @@ const serviceProviderSchema = new mongoose.Schema(
       lng: Number,
     },
     culture: [],
+    cover: [],
     email: {
       type: String,
       required: true,

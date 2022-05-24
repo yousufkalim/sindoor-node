@@ -19,5 +19,7 @@ router.delete("/:serviceId", services.deleteService); //* delete service
 router.get("/:serviceId", services.getById); //* Get service by id
 router.get("/:userId/all", services.getAllByUserID); //* get all services of user
 
+router.get("/", services.getRandomServices); //* Get random services
+
 // Export
 module.exports = router;

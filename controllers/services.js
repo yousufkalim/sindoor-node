@@ -84,7 +84,31 @@ exports.deleteService = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     let { serviceId } = req.params;
-    res.json({ success: true, serviceId });
+    let service = await Services.findById(serviceId);
+    // .populate(
+    //   "serviceProvider",
+    //   "_id"
+    // );
+    res.json({ success: true, service });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getRandomServices = async (req, res) => {
+  try {
+    let { category, page } = req.query;
+    if (!page) page = 0;
+    if (!category) {
+      return res.json({ success: false, message: "Category is required." });
+    }
+
+    let services = await Services.find({ category });
+    services.sort(() => Math.random() - 0.5);
+
+    res.json({ success: true, services, page });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

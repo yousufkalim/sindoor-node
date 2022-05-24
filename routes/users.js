@@ -46,5 +46,9 @@ router.put(
 // Delete
 router.delete("/:userId", users.delete); // delete a specific user by it's id
 
+// Add service Provider to favorite
+router.put("/:userId/:serviceProviderId", users.addToFavorite);
+router.get("/:userId/favorites", users.getFavorites);
+
 // Export
 module.exports = router;

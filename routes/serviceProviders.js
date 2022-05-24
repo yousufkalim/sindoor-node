@@ -36,7 +36,16 @@ router.get("/:userId", serviceProviders.getById); // Get one user by it's id
 // Update
 router.put(
   "/:userId",
-  upload.single("image"),
+  upload.fields([
+    {
+      name: "image",
+      maxCount: 1,
+    },
+    {
+      name: "cover",
+      maxCount: 5,
+    },
+  ]),
   //   validateServiceProviderUpdate,
   //   isValidated,
   serviceProviders.update

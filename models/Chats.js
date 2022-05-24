@@ -24,7 +24,10 @@ const ChatSchema = new mongoose.Schema(
       {
         text: String,
         from: String,
-        date: Date,
+        date: {
+          type: Date,
+          default: new Date(),
+        },
         seen: {
           type: String,
           enum: ["sent", "received", "seen"],
@@ -39,6 +42,7 @@ const ChatSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    versionKey: false,
   }
 );
 

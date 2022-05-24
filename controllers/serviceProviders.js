@@ -90,6 +90,7 @@ exports.getFew = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
 /**
  ** Get User By id
  * @param {object} req
@@ -146,7 +147,9 @@ exports.delete = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { userId } = req.params;
-    req.body.location = JSON.parse(req.body.location);
+    if (req.body.location) {
+      req.body.location = JSON.parse(req.body.location);
+    }
 
     // Cannot update with this API
     if (req.body.password) {
@@ -154,14 +157,27 @@ exports.update = async (req, res) => {
     }
 
     // Getting url of the image
-    if (req.file) {
-      req.body.photo = req.file.path; // Creating a new property called photo in body object
+    if (req.files) {
+      if (req.files.image) {
+        req.body.photo = req.files.image[0].path; // Creating a new property called photo in body object
+      }
+      if (req.files.cover) {
+        let cover = [];
+        req.files.cover.forEach((file) => {
+          cover.push(file.path);
+        });
+        req.body.cover = cover;
+      }
     }
 
     const user = await ServiceProviders.findByIdAndUpdate(userId, req.body, {
       new: true,
     }); // Updating the user
-    res.json({ success: true, message: "User updated successfully", user }); // Success
+    res.json({
+      success: true,
+      message: "User updated successfully",
+      user,
+    }); // Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

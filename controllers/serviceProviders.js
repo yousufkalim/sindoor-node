@@ -184,3 +184,26 @@ exports.update = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+
+/**
+ * Get Service Providers
+ * @param {object} req
+ * @param {object} res
+ */
+exports.getByAdmin = async (req, res) => {
+  try {
+    const { pageNumber, pageSize } = req.body;
+    console.log(pageNumber, "pageNumber");
+    console.log(pageSize, "pageSize");
+    const serviceproviders = await ServiceProviders.find()
+      .skip(pageNumber * pageSize)
+      .limit(parseInt(pageSize))
+      .sort({ date: -1 }); // Finding all the users from db
+    const totalResults = await ServiceProviders.find().countDocuments();
+    res.json({ success: true, serviceproviders, totalResults }); // Success
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};

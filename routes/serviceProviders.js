@@ -10,6 +10,7 @@ const {
   validateServiceProvider,
   isValidated,
 } = require("../middleware/validators");
+const { checkAdminAuth } = require("../middleware/adminAuth");
 
 /**
  ** Service provider Routes
@@ -31,6 +32,7 @@ router.post(
 
 // Read
 router.get("/", serviceProviders.getFew); // Get Few users at once
+router.post("/getByAdmin", checkAdminAuth, serviceProviders.getByAdmin); // GetByAdmin
 router.get("/:userId", serviceProviders.getById); // Get one user by it's id
 
 // Update

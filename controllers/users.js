@@ -76,6 +76,26 @@ exports.getAll = async (req, res) => {
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
+/**
+ * Get all users by admin
+ * @param {object} req
+ * @param {object} res
+ */
+exports.getByAdmin = async (req, res) => {
+  try {
+    const { pageNumber, pageSize } = req.body;
+    const users = await Users.find()
+      .skip(pageNumber * pageSize)
+      .limit(parseInt(pageSize))
+      .sort({ date: -1 }); // Finding all the users from db
+    const totalResults = await Users.find().countDocuments();
+    res.json({ success: true, users, totalResults }); // Success
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
 
 /**
  * Get user by id

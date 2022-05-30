@@ -6,7 +6,7 @@ const router = require("express").Router();
 const moment = require("moment");
 
 // Parent Routes
-// router.use("/admins", require("./admins")); // All the user routes
+router.use("/admins", require("./admins")); // All the admins routes
 router.use("/users", require("./users")); // All the user routes
 router.use("/serviceProviders", require("./serviceProviders")); // All the user routes
 router.use("/auth", require("./auth")); // All the auth routes

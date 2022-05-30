@@ -12,6 +12,8 @@ const {
   isValidated,
 } = require("../middleware/validators");
 
+const { checkAdminAuth } = require("../middleware/adminAuth");
+
 /**
  ** User Routes
  * @method post user signup
@@ -32,6 +34,8 @@ router.post(
 
 // Read
 router.get("/", users.getAll); // Get all users at once
+// Read
+router.post("/getByAdmin", checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
 router.get("/:userId", users.getById); // Get one user by it's id
 
 // Update

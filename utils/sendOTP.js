@@ -24,7 +24,7 @@ exports.sendOTP = (phone, otp) => {
         to: phone,
       })
       .then((message) => {
-        // On message sucessfully sent
+        // On message successfully sent
         resolve({ success: true, message: "OTP sent" });
       })
       .catch((err) => {

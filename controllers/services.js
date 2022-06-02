@@ -21,7 +21,6 @@ exports.getAllByUserID = async (req, res) => {
 //* Create Service
 exports.createService = async (req, res) => {
   try {
-    //todo: create service and push in service provider model
     let { userId } = req.params;
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
@@ -42,7 +41,6 @@ exports.createService = async (req, res) => {
     req.body.location = JSON.parse(req.body.location);
 
     await Services.create(req.body).then((service) => {
-      //todo push service id in service provider model
       serviceProvider.services.push({ service: service._id });
       serviceProvider.save();
 
@@ -58,6 +56,7 @@ exports.createService = async (req, res) => {
 //* edit service
 exports.editService = async (req, res) => {
   try {
+    //todo: edit service
     let { serviceId } = req.params;
     res.json({ success: true, serviceId });
   } catch (err) {
@@ -70,7 +69,7 @@ exports.editService = async (req, res) => {
 //* delete service
 exports.deleteService = async (req, res) => {
   try {
-    //todo: delete service from service provider model
+    //todo: also delete service from service provider model
     let { serviceId } = req.params;
     res.json({ success: true, serviceId });
   } catch (err) {
@@ -86,8 +85,7 @@ exports.getById = async (req, res) => {
     let { serviceId } = req.params;
     let service = await Services.findById(serviceId);
     // .populate(
-    //   "serviceProvider",
-    //   "_id"
+    //   "serviceProvider"
     // );
     res.json({ success: true, service });
   } catch (err) {
@@ -97,7 +95,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-exports.getRandomServices = async (req, res) => {
+exports.getRandomServiceProviders = async (req, res) => {
   try {
     let { category, page } = req.query;
     if (!page) page = 0;
@@ -105,7 +103,10 @@ exports.getRandomServices = async (req, res) => {
       return res.json({ success: false, message: "Category is required." });
     }
 
-    let services = await Services.find({ category });
+    let services = await Services.find({ category }).populate(
+      "serviceProvider",
+      "_id company_name location description"
+    );
     services.sort(() => Math.random() - 0.5);
 
     res.json({ success: true, services, page });

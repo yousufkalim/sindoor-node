@@ -37,7 +37,11 @@ exports.create = async (req, res) => {
     let otp = Math.random().toFixed(4).slice(-4);
     req.body.otp = otp;
     req.body.location = JSON.parse(req.body.location);
-    req.body.culture = JSON.parse(req.body.culture);
+    let cultureArr = JSON.parse(req.body.culture);
+    cultureArr.forEach((val, i) => {
+      cultureArr[i] = JSON.parse(val);
+    });
+    req.body.culture = cultureArr;
 
     // Adding user in db
     await ServiceProviders.create(req.body).then((user) => {
@@ -102,6 +106,13 @@ exports.getById = async (req, res) => {
     let serviceProvider = await ServiceProviders.findById(userId).populate(
       "services.service"
     );
+    if (!serviceProvider) {
+      return res.json({
+        success: false,
+        message: "No Service provider found",
+      });
+    }
+
     let ratingsSum = serviceProvider.ratings.reduce(
       (prev, cnt) => prev + cnt.rating,
       0
@@ -178,6 +189,58 @@ exports.update = async (req, res) => {
       message: "User updated successfully",
       user,
     }); // Success
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getUsersForMap = async (req, res) => {
+  try {
+    let serviceProviders = await ServiceProviders.aggregate([
+      {
+        $project: {
+          _id: 1,
+          company_name: 1,
+          "location.lat": 1,
+          "location.lng": 1,
+        },
+      },
+    ]);
+    // let name = "Sindoor";
+    // let id = "62949996c84e7033e4ddc89c";
+    // let x = {
+    //   _id: "629495fae129f9195a61cab0",
+    //   company_name: "Sindoor Inc",
+    //   location: {
+    //     lat: 48.346613,
+    //     lng: -4.308873,
+    //   },
+    // };
+    // let serviceProviders = [];
+    // Array(300)
+    //   .fill(0)
+    //   .forEach((i, j) => {
+    //     let _id = x._id;
+    //     let company_name = `${name} ${j + 1}`;
+    //     if (j % 2 === 0) {
+    //       _id = id;
+    //     }
+    //     serviceProviders.push({
+    //       _id: _id,
+    //       company_name: company_name,
+    //       location: {
+    //         lat: parseFloat(
+    //           (x.location.lat - Math.random(10) / 200).toFixed(7)
+    //         ),
+    //         lng: parseFloat(
+    //           (x.location.lng - Math.random(10) / 200).toFixed(7)
+    //         ),
+    //       },
+    //     });
+    //   });
+    return res.json({ users: serviceProviders });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

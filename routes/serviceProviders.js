@@ -33,6 +33,7 @@ router.post(
 // Read
 router.get("/", serviceProviders.getFew); // Get Few users at once
 router.post("/getByAdmin", checkAdminAuth, serviceProviders.getByAdmin); // GetByAdmin
+router.get("/map", serviceProviders.getUsersForMap); // get users for map
 router.get("/:userId", serviceProviders.getById); // Get one user by it's id
 
 // Update
@@ -55,6 +56,5 @@ router.put(
 
 // Delete
 router.delete("/:userId", serviceProviders.delete); // delete a specific user by it's id
-
 // Export
 module.exports = router;

@@ -3,7 +3,6 @@
  * @author Yousuf Kalim
  */
 const router = require("express").Router();
-const moment = require("moment");
 
 // Parent Routes
 router.use("/admins", require("./admins")); // All the admins routes

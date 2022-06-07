@@ -103,9 +103,9 @@ exports.getFew = async (req, res) => {
 exports.getById = async (req, res) => {
   try {
     let { userId } = req.params;
-    let serviceProvider = await ServiceProviders.findById(userId).populate(
-      "services.service"
-    );
+    let serviceProvider = await ServiceProviders.findById(userId)
+      .populate("services.service")
+      .populate("ratings.user", "first_name last_name photo");
     if (!serviceProvider) {
       return res.json({
         success: false,
@@ -212,13 +212,13 @@ exports.getByAdmin = async (req, res) => {
       .sort({ date: -1 }); // Finding all the users from db
     const totalResults = await ServiceProviders.find().countDocuments();
     res.json({ success: true, serviceproviders, totalResults }); // Success
-     } catch (err) {
+  } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
-    
+
 exports.getUsersForMap = async (req, res) => {
   try {
     let serviceProviders = await ServiceProviders.aggregate([
@@ -231,39 +231,39 @@ exports.getUsersForMap = async (req, res) => {
         },
       },
     ]);
-    // let name = "Sindoor";
-    // let id = "62949996c84e7033e4ddc89c";
-    // let x = {
-    //   _id: "629495fae129f9195a61cab0",
-    //   company_name: "Sindoor Inc",
-    //   location: {
-    //     lat: 48.346613,
-    //     lng: -4.308873,
-    //   },
-    // };
-    // let serviceProviders = [];
-    // Array(300)
-    //   .fill(0)
-    //   .forEach((i, j) => {
-    //     let _id = x._id;
-    //     let company_name = `${name} ${j + 1}`;
-    //     if (j % 2 === 0) {
-    //       _id = id;
-    //     }
-    //     serviceProviders.push({
-    //       _id: _id,
-    //       company_name: company_name,
-    //       location: {
-    //         lat: parseFloat(
-    //           (x.location.lat - Math.random(10) / 200).toFixed(7)
-    //         ),
-    //         lng: parseFloat(
-    //           (x.location.lng - Math.random(10) / 200).toFixed(7)
-    //         ),
-    //       },
-    //     });
-    //   });
     return res.json({ users: serviceProviders });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.rateUser = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let alreadyRated = await ServiceProviders.findOne({
+      _id: userId,
+      "ratings.user": req.body.user,
+    });
+    if (alreadyRated) {
+      let alreadyRated = await ServiceProviders.findOneAndUpdate(
+        {
+          _id: userId,
+          "ratings.user": req.body.user,
+        },
+        {
+          $set: { "ratings.$": req.body },
+        }
+      );
+
+      return res.json({ success: true, message: "Rating Updated" });
+    } else {
+      let serviceProvider = await ServiceProviders.findById(userId);
+      serviceProvider.ratings.push(req.body);
+      serviceProvider.save();
+      res.json({ success: true, message: "Thank You for rating" });
+    }
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

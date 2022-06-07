@@ -54,6 +54,8 @@ router.put(
   serviceProviders.update
 ); // Update a specific user by it's id
 
+router.post("/rating/:userId", serviceProviders.rateUser); // rate User
+
 // Delete
 router.delete("/:userId", serviceProviders.delete); // delete a specific user by it's id
 // Export

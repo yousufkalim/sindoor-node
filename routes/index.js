@@ -12,6 +12,7 @@ router.use("/auth", require("./auth")); // All the auth routes
 router.use("/events", require("./events")); // All the event routes
 router.use("/services", require("./services")); // All the services routes
 router.use("/chat", require("./chat")); // All the chat routes
+router.use("/bookings", require("./bookings")); // All the chat routes
 
 // Export
 module.exports = router;

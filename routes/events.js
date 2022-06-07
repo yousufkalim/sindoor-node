@@ -121,6 +121,9 @@ router.get("/all", checkAuth, events.getUpcomingEvents);
 // Get Past events
 router.get("/past", checkAuth, events.getPastEvents);
 
+// Get names of upcoming events
+router.get("/names", checkAuth, events.getNamesOfUpcomingEvents);
+
 // Get event by id
 router.get("/:eventId", events.getEventByID);
 

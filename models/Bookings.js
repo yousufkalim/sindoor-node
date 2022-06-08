@@ -10,32 +10,32 @@ const { Schema, model } = require("mongoose");
 const bookingSchema = new Schema(
   {
     service: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "services",
     },
     serviceProvider: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "serviceProviders",
     },
     user: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "users",
     },
     event: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "events",
     },
     status: {
       type: String,
-      enum: ["pending", "accepted", "refused"],
+      enum: ["pending", "accepted", "rejected"],
       default: "pending",
     },
-    price: {
-      type: Number,
-    },
+    final_price: Number,
+    deposit_price: Number,
     paid: {
-      type: Boolean,
-      default: false,
+      type: String,
+      enum: ["paid", "deposit", "nill"],
+      default: "nill",
     },
     start_date: Date,
     end_date: Date,

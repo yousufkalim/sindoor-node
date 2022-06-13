@@ -6,6 +6,7 @@
 const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
 const Chats = require("../models/Chats");
+const Notifications = require("../models/Notifications");
 
 module.exports = (io) => {
   // Socket
@@ -89,6 +90,14 @@ module.exports = (io) => {
           { new: true }
         );
       }
+    });
+
+    socket.on("notification", async (data) => {
+      socket.broadcast.emit(`notification${data.receiver}`, {
+        ...data,
+        read: false,
+      });
+      await Notifications.create(data);
     });
   });
 };

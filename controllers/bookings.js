@@ -13,6 +13,7 @@ exports.SendRequest = async (req, res) => {
       moment(body.start_date),
       "minute"
     );
+
     duration = (duration / 60).toFixed(1);
 
     body.duration = duration;
@@ -21,7 +22,11 @@ exports.SendRequest = async (req, res) => {
 
     booking.save();
 
-    res.json({ success: true, message: "Request sent to Service Provider." });
+    res.json({
+      success: true,
+      message: "Request sent to Service Provider.",
+      booking,
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -68,6 +73,21 @@ exports.getRequestsByEventId = async (req, res) => {
   }
 };
 
+exports.getById = async (req, res) => {
+  try {
+    let { bookingId } = req.params;
+    let booking = await Bookings.findById(bookingId).populate(
+      "service user event serviceProvider",
+      "name first_name last_name location type photo company_name"
+    );
+    res.json({ success: true, booking });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 exports.acceptRequest = async (req, res) => {
   try {
     let { requestId } = req.params;
@@ -84,7 +104,7 @@ exports.acceptRequest = async (req, res) => {
       status: "accepted",
     });
 
-    res.json({ message: "Price / Status Updated" });
+    res.json({ message: "Price / Status Updated." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -104,4 +124,8 @@ exports.rejectRequest = async (req, res) => {
     console.log("Error ----> ", err);
     res.status(500).json({ success: false, message: "Internal server error" });
   }
+};
+
+exports.webHook = async (req, res) => {
+  res.json("Haalo");
 };

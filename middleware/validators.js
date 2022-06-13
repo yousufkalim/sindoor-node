@@ -195,7 +195,7 @@ exports.validateService = [
 exports.validateRequestAccept = [
   check("final_price")
     .notEmpty()
-    .withMessage("Total price is required")
+    .withMessage("Final price is required")
     .isNumeric()
     .withMessage("Amount can only be numeric"),
   check("deposit_price")

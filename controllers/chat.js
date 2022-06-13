@@ -110,7 +110,7 @@ exports.getAllChats = async (req, res) => {
       },
       {
         // Get last message only.
-        messages: { $slice: 1 },
+        messages: { $slice: -1 },
       }
     )
       .sort({ last: -1 })

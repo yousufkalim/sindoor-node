@@ -126,6 +126,7 @@ exports.rejectRequest = async (req, res) => {
   }
 };
 
+// exports.
 exports.webHook = async (req, res) => {
   res.json("Haalo");
 };

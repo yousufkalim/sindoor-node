@@ -36,6 +36,24 @@ router.post("/getByAdmin", checkAdminAuth, serviceProviders.getByAdmin); // GetB
 router.get("/map", serviceProviders.getUsersForMap); // get users for map
 router.get("/:userId", serviceProviders.getById); // Get one user by it's id
 
+// add bank route
+router.put(
+  "/add-bank/:userId",
+  upload.fields([
+    {
+      name: "front",
+      maxCount: 1,
+    },
+    {
+      name: "back",
+      maxCount: 1,
+    },
+  ]),
+  serviceProviders.addBank
+);
+
+router.get("/edit-bank/:userId", serviceProviders.EditBank);
+
 // Update
 router.put(
   "/:userId",
@@ -53,6 +71,8 @@ router.put(
   //   isValidated,
   serviceProviders.update
 ); // Update a specific user by it's id
+
+router.post("/rating/:userId", serviceProviders.rateUser); // rate User
 
 // Delete
 router.delete("/:userId", serviceProviders.delete); // delete a specific user by it's id

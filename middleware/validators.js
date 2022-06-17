@@ -192,6 +192,19 @@ exports.validateService = [
     .withMessage("Description of service is required."),
 ];
 
+exports.validateRequestAccept = [
+  check("final_price")
+    .notEmpty()
+    .withMessage("Final price is required")
+    .isNumeric()
+    .withMessage("Amount can only be numeric"),
+  check("deposit_price")
+    .notEmpty()
+    .withMessage("Deposit amount is required")
+    .isNumeric()
+    .withMessage("Amount can only be numeric"),
+];
+
 /*
 ======================
 Result

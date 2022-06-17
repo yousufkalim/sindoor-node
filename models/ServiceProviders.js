@@ -51,6 +51,16 @@ const serviceProviderSchema = new mongoose.Schema(
         comment: String,
       },
     ],
+    bank: {
+      phone: String,
+      DOB: Date,
+      bankName: String,
+      iban: String,
+      stripeID: String,
+      personID: String,
+      front: String,
+      back: String,
+    },
     faqs: [
       {
         question: String,

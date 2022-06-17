@@ -260,6 +260,35 @@ exports.getUpcomingEvents = async (req, res) => {
   }
 };
 
+//* get upcoming events
+exports.getNamesOfUpcomingEvents = async (req, res) => {
+  try {
+    let userId = req.user._id;
+    let events = await Events.find(
+      {
+        $and: [
+          {
+            // organizer: userId,
+            $or: [{ organizer: userId }, { "guests.guest": userId }],
+          },
+          {
+            $or: [
+              { "end_date.date": { $gte: new Date() } },
+              { "start_date.date": { $gte: new Date() } },
+            ],
+          },
+        ],
+      },
+      "_id name"
+    ).sort({ "start_date.date": 1 });
+    res.json({ success: true, events });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 //* get past events
 exports.getPastEvents = async (req, res) => {
   try {

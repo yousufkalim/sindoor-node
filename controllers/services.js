@@ -18,6 +18,18 @@ exports.getAllByUserID = async (req, res) => {
   }
 };
 
+exports.getFewByUserId = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let services = await Services.find({ serviceProvider: userId }).limit(5);
+    res.json({ success: true, services });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 //* Create Service
 exports.createService = async (req, res) => {
   try {
@@ -56,9 +68,27 @@ exports.createService = async (req, res) => {
 //* edit service
 exports.editService = async (req, res) => {
   try {
-    //todo: edit service
     let { serviceId } = req.params;
-    res.json({ success: true, serviceId });
+    let body = req.body;
+    if (body.location) {
+      body.location = JSON.parse(body.location);
+    }
+    // check if request have images
+    let photos = [];
+    if (req.files) {
+      req.files.forEach((image) => {
+        photos.push(image.path);
+      });
+    }
+    if (body.photos) {
+      body.photos = [...JSON.parse(body.photos), ...photos];
+    } else {
+      body.photos = photos;
+    }
+
+    await Services.findByIdAndUpdate(serviceId, req.body).then(() => {
+      res.json({ success: true, message: "Service Updated." });
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
@@ -69,9 +99,22 @@ exports.editService = async (req, res) => {
 //* delete service
 exports.deleteService = async (req, res) => {
   try {
-    //todo: also delete service from service provider model
     let { serviceId } = req.params;
-    res.json({ success: true, serviceId });
+    await Services.findByIdAndDelete(serviceId).then(async (resp) => {
+      await ServiceProviders.findOneAndUpdate(
+        {
+          _id: resp.serviceProvider,
+        },
+        {
+          $pull: {
+            services: {
+              service: serviceId,
+            },
+          },
+        }
+      );
+    });
+    res.json({ success: true, message: "Service deleted." });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

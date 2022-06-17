@@ -50,7 +50,7 @@ const EventSchema = new mongoose.Schema({
     {
       serviceProvider: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: "serviceProviders",
       },
       service: {
         type: mongoose.Schema.Types.ObjectId,

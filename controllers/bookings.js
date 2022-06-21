@@ -5,6 +5,7 @@
 
 const moment = require("moment");
 const Bookings = require("../models/Bookings");
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 exports.SendRequest = async (req, res) => {
   try {
@@ -55,6 +56,49 @@ exports.getRequests = async (req, res) => {
   }
 };
 
+exports.getBookings = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let requests = await Bookings.find({
+      serviceProvider: userId,
+      status: "accepted",
+      paid: { $in: ["deposit", "paid"] },
+    })
+      .sort("start_date")
+      .populate(
+        "service user event",
+        "name first_name last_name location type photo description"
+      );
+    res.json({ success: true, requests });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.getFewBookings = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let requests = await Bookings.find({
+      serviceProvider: userId,
+      status: "accepted",
+      paid: { $in: ["deposit", "paid"] },
+    })
+      .sort("start_date")
+      .limit(5)
+      .populate(
+        "service user event",
+        "name first_name last_name location type photo description"
+      );
+    res.json({ success: true, requests });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
 exports.getRequestsByEventId = async (req, res) => {
   try {
     let { eventId } = req.params;
@@ -63,7 +107,7 @@ exports.getRequestsByEventId = async (req, res) => {
       status: { $in: ["accepted", "pending"] },
     }).populate(
       "service user event serviceProvider",
-      "name first_name last_name location type photo company_name"
+      "name first_name last_name location type photo company_name bank"
     );
     res.json({ success: true, bookings });
   } catch (err) {
@@ -78,7 +122,7 @@ exports.getById = async (req, res) => {
     let { bookingId } = req.params;
     let booking = await Bookings.findById(bookingId).populate(
       "service user event serviceProvider",
-      "name first_name last_name location type photo company_name"
+      "name first_name last_name location type photo company_name bank"
     );
     res.json({ success: true, booking });
   } catch (err) {
@@ -126,7 +170,107 @@ exports.rejectRequest = async (req, res) => {
   }
 };
 
-// exports.
-exports.webHook = async (req, res) => {
-  res.json("Haalo");
+// Stripe Checkout method
+exports.checkOut = async (req, res) => {
+  try {
+    let line_items = req.body.line_items;
+    let data = req.body.data;
+
+    let { unit_amount } = data;
+    let five_percent_of_amount = (5 * unit_amount) / 100;
+    let amount_to_send = data.unit_amount - five_percent_of_amount;
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      line_items,
+      locale: "fr",
+      mode: "payment",
+      success_url: `${process.env.CLIENT_URL}/redirect=true&success=true`,
+      cancel_url: `${process.env.CLIENT_URL}/redirect=true&success=false`,
+      payment_intent_data: {
+        transfer_data: {
+          destination: data.stripe,
+          amount: amount_to_send,
+        },
+      },
+      metadata: {
+        type: data.type,
+        request: data.request,
+        user: data.user,
+        payment: data.payment,
+      },
+    });
+
+    res.json({ success: true, url: session.url });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// Stripe Webhook
+exports.webhook = async (req, res) => {
+  let sig = req.headers["stripe-signature"];
+  let event;
+  try {
+    event = stripe.webhooks.constructEvent(
+      req.rawBody,
+      sig,
+      process.env.WEBHOOK_SEC
+    );
+  } catch (err) {
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  switch (event.type) {
+    case "checkout.session.completed": {
+      const session = event.data.object; // get session
+      const { metadata } = session; // get metadata
+
+      let { payment, request, user } = metadata;
+
+      let booking = await Bookings.findById(request);
+      booking.paid = payment;
+      booking.payment_history.push({
+        user,
+        date: new Date(),
+        amount:
+          payment === "deposit" ? booking.deposit_price : booking.final_price,
+      });
+      booking.save();
+    }
+    default: {
+      console.log(`Unhandled event type ${event.type}`);
+    }
+  }
+  res.send();
+};
+
+exports.canRateInfo = async (req, res) => {
+  try {
+    let { userId, serviceProviderId } = req.params;
+    let bookingsCount = await Bookings.countDocuments({
+      $and: [
+        { paid: "paid" },
+        { serviceProvider: serviceProviderId },
+        {
+          $or: [
+            {
+              user: userId,
+            },
+            {
+              "payment_history.user": userId,
+            },
+          ],
+        },
+      ],
+    });
+
+    res.json({ success: true, status: bookingsCount > 0 });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };

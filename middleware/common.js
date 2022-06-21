@@ -8,6 +8,17 @@ const cors = require("cors");
 
 // Common Middleware
 module.exports = (app) => {
+  app.use(
+    express.json({
+      limit: "50mb",
+      verify: function (req, res, buf) {
+        var url = req.originalUrl;
+        if (url.startsWith("/api/bookings/stripe/webhook")) {
+          req.rawBody = buf.toString();
+        }
+      },
+    })
+  );
   app.use(cors({ origin: true })); // CORS (Cross Origin Policy) to restrict unknown requests
   app.use(logger("dev")); // Morgan - to log every request in console
   app.use(express.urlencoded({ extended: true })); // to get url encoded data from requests

@@ -37,6 +37,16 @@ const bookingSchema = new Schema(
       enum: ["paid", "deposit", "nill"],
       default: "nill",
     },
+    payment_history: [
+      {
+        user: {
+          type: Schema.Types.ObjectId,
+          ref: "users",
+        },
+        amount: Number,
+        date: Date,
+      },
+    ],
     start_date: Date,
     end_date: Date,
     duration: Number, // minutes

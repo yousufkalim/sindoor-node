@@ -7,6 +7,7 @@ const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
 const Chats = require("../models/Chats");
 const Notifications = require("../models/Notifications");
+const { sendFcmNotification } = require("../utils/sendFcmNotification");
 
 module.exports = (io) => {
   // Socket
@@ -70,6 +71,7 @@ module.exports = (io) => {
         );
       }
     });
+
     socket.on("offline", async (data) => {
       // change user status to offline
       // send Online socket to user
@@ -93,6 +95,17 @@ module.exports = (io) => {
     });
 
     socket.on("notification", async (data) => {
+      let user = await Users.findById(data.receiver);
+      if (!user) {
+        user = await ServiceProviders.findById(data.receiver);
+      }
+      if (user.fcmToken) {
+        sendFcmNotification(
+          user.fcmToken,
+          data.sender.name,
+          `${data.sender.name} ${data.text}`
+        );
+      }
       socket.broadcast.emit(`notification${data.receiver}`, {
         ...data,
         read: false,

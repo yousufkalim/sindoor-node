@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema(
     },
     otp: String,
     photo: String,
+    fcmToken: String,
     events: [
       {
         event: {

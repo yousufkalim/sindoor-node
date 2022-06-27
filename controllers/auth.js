@@ -19,15 +19,23 @@ const tokenSecret = process.env.JWT_SECRET;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { email, password } = req.body;
+    const { email, password, fcmToken } = req.body;
     let role = "User";
     // Getting user from db
-    let user = await Users.findOne({ email });
+    let user = await Users.findOneAndUpdate(
+      { email },
+      { fcmToken },
+      { new: true }
+    );
 
     if (!user) {
       // If user not found check from service providers
       role = "ServiceProvider";
-      user = await ServiceProviders.findOne({ email }); // find user from service provider.
+      user = await ServiceProviders.findOneAndUpdate(
+        { email },
+        { fcmToken },
+        { new: true }
+      ); // find user from service provider.
       if (!user) {
         return res
           .status(404)

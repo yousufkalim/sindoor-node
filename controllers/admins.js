@@ -5,6 +5,7 @@
 const Admins = require("../models/Admins");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { contactUsEmail } = require("../utils/sendEmail");
 const tokenSecret = process.env.JWT_SECRET;
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 
@@ -105,4 +106,22 @@ exports.login = async (req, res) => {
 exports.confirmAuth = async (req, res) => {
   // If user authenticated
   res.json({ success: true, admin: req.admin, token: req.token });
+};
+
+exports.contact = async (req, res) => {
+  try {
+    let { name, email, message } = req.body;
+
+    contactUsEmail(name, email, message)
+      .then((resp) => {
+        return res.json(resp);
+      })
+      .catch((err) => {
+        throw err;
+      });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 };

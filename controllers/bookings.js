@@ -6,6 +6,7 @@
 const moment = require("moment");
 const Bookings = require("../models/Bookings");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
+const { getCommission } = require("../utils/getCommission");
 
 exports.SendRequest = async (req, res) => {
   try {
@@ -177,8 +178,8 @@ exports.checkOut = async (req, res) => {
     let data = req.body.data;
 
     let { unit_amount } = data;
-    let five_percent_of_amount = (5 * unit_amount) / 100;
-    let amount_to_send = data.unit_amount - five_percent_of_amount;
+    console.log(unit_amount, unit_amount - getCommission(unit_amount));
+    let amount_to_send = unit_amount - getCommission(unit_amount); // deducting commission here
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -211,7 +212,6 @@ exports.checkOut = async (req, res) => {
 
 // Stripe Webhook
 exports.webhook = async (req, res) => {
-  console.log("Webhook");
   let sig = req.headers["stripe-signature"];
   let event;
   try {
@@ -223,7 +223,6 @@ exports.webhook = async (req, res) => {
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-  console.log("event", event);
 
   switch (event.type) {
     case "checkout.session.completed": {

@@ -29,9 +29,10 @@ const serviceSchema = new mongoose.Schema(
       lng: Number,
     },
     price: {
-      type: Number,
+      type: String,
       required: true,
     },
+    fixed_amount: String,
     deposit: {
       type: String,
       required: true,

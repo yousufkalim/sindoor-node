@@ -81,6 +81,7 @@ const serviceProviderSchema = new mongoose.Schema(
     },
     otp: String,
     photo: String,
+    fcmToken: String,
   },
   {
     timestamps: true,

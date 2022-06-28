@@ -178,8 +178,7 @@ exports.checkOut = async (req, res) => {
     let data = req.body.data;
 
     let { unit_amount } = data;
-    console.log(unit_amount, unit_amount - getCommission(unit_amount));
-    let amount_to_send = unit_amount - getCommission(unit_amount); // deducting commission here
+    let amount_to_send = Math.floor(unit_amount - getCommission(unit_amount)); // deducting commission here
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],

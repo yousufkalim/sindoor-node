@@ -42,6 +42,15 @@ const userSchema = new mongoose.Schema(
     otp: String,
     photo: String,
     fcmToken: String,
+    bank: {
+      phone: String,
+      DOB: Date,
+      bankName: String,
+      iban: String,
+      stripeID: String,
+      front: String,
+      back: String,
+    },
     events: [
       {
         event: {

@@ -5,6 +5,7 @@
 
 const moment = require("moment");
 const Bookings = require("../models/Bookings");
+const Wishlists = require("../models/Wishlists");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { getCommission } = require("../utils/getCommission");
 
@@ -194,10 +195,12 @@ exports.checkOut = async (req, res) => {
         },
       },
       metadata: {
-        type: data.type,
-        request: data.request,
-        user: data.user,
-        payment: data.payment,
+        type: data?.type,
+        request: data?.request,
+        user: data?.user,
+        payment: data?.payment,
+        item: data?.item,
+        amount: data?.unit_amount,
       },
     });
 
@@ -228,17 +231,39 @@ exports.webhook = async (req, res) => {
       const session = event.data.object; // get session
       const { metadata } = session; // get metadata
 
-      let { payment, request, user } = metadata;
+      let { type, payment, request, user, item, amount } = metadata;
 
-      let booking = await Bookings.findById(request);
-      booking.paid = payment;
-      booking.payment_history.push({
-        user,
-        date: new Date(),
-        amount:
-          payment === "deposit" ? booking.deposit_price : booking.final_price,
-      });
-      booking.save();
+      if (type === "service_payment") {
+        /**
+         *? Booking props
+         ** payment
+         ** user
+         ** request
+         */
+        let booking = await Bookings.findById(request);
+        booking.paid = payment;
+        booking.payment_history.push({
+          user,
+          date: new Date(),
+          amount:
+            payment === "deposit" ? booking.deposit_price : booking.final_price,
+        });
+        booking.save();
+      } else if (type === "wishlist_payment") {
+        /**
+         *? Wishlist props
+         ** item
+         ** amount
+         ** user
+         */
+        let wishlistItem = await Wishlists.findById(item);
+
+        wishlistItem.paid.push({
+          amount: amount / 100, // saving amount in euros
+          user,
+        });
+        wishlistItem.save();
+      }
     }
     default: {
       console.log(`Unhandled event type ${event.type}`);

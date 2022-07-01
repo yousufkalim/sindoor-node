@@ -434,10 +434,9 @@ exports.wishlists = async (req, res) => {
     const { eventId } = req.params;
     let { sort } = req.query;
     sort = sort === "true";
-    let wishlist = await Wishlists.find({ event: eventId }).populate(
-      "paid.user",
-      "first_name last_name photo"
-    );
+    let wishlist = await Wishlists.find({ event: eventId })
+      .populate("paid.user", "first_name last_name photo ")
+      .populate("user", "bank.stripeID");
 
     // calcs
     wishlist.forEach((item, index) => {

@@ -32,6 +32,10 @@ const WishlistSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "events",
     },
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "users",
+    },
     image: String,
   },
   {

@@ -301,7 +301,7 @@ exports.addBank = async (req, res) => {
       email: serviceProvider.email,
       business_profile: {
         name: serviceProvider.name,
-        mcc: "7011",
+        mcc: "5811",
         url: "http://google.com",
       },
       capabilities: {

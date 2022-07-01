@@ -7,6 +7,7 @@ const ServiceProviders = require("../models/ServiceProviders");
 const bcrypt = require("bcryptjs");
 const { sendOTP } = require("../utils/sendOTP");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Create User - Signup
@@ -221,6 +222,106 @@ exports.getFavorites = async (req, res) => {
     //   },
     // ]);
     res.json({ success: true, favorites });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+//* CREATING INDIVIDUAL STRIPE CONNECTED ACCOUNT
+exports.addBank = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    let { phone, DOB, bankName, iban } = req.body;
+    DOB = JSON.parse(DOB);
+    const accountToken = req.body.token;
+
+    let front =
+      req.files["front"] !== undefined ? req.files["front"][0].path : "";
+    front !== "" && (front = front.replace(/\\/g, "/"));
+
+    let back = req.files["back"] !== undefined ? req.files["back"][0].path : "";
+    back !== "" && (back = back.replace(/\\/g, "/"));
+
+    let user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No user Found" });
+    }
+
+    // creating company account
+    const account = await stripe.account.create({
+      type: "custom",
+      country: "FR",
+      account_token: accountToken,
+      email: user.email,
+      capabilities: {
+        card_payments: { requested: true },
+        transfers: { requested: true },
+      },
+      business_profile: {
+        name: user.first_name,
+        mcc: "5441",
+        url: "https://www.google.com",
+      },
+      external_account: {
+        object: "bank_account",
+        account_number: iban,
+        bank_name: bankName,
+        country: "FR",
+        currency: "eur",
+      },
+    });
+
+    user.bank.phone = phone;
+    user.bank.DOB = DOB;
+    user.bank.bankName = bankName;
+    user.bank.iban = iban;
+    user.bank.stripeID = account.id;
+    user.bank.front = front;
+    user.bank.back = back;
+
+    user.save();
+
+    res.status(200).send({ success: true, message: "Bank Account added" });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.EditBank = async (req, res) => {
+  try {
+    let { userId } = req.params;
+
+    let user = await Users.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: "No user Found" });
+    }
+
+    const accountLink = await stripe.accountLinks.create({
+      account: user.bank.stripeID,
+      refresh_url: `${process.env.CLIENT_URL}/redirect=true`,
+      return_url: `${process.env.CLIENT_URL}/redirect=true`,
+      type: "account_update",
+    });
+    res.status(200).json({ success: true, url: accountLink });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+exports.checkBalance = async (req, res) => {
+  try {
+    let { accountId } = req.params;
+    const balance = await stripe.balance.retrieve({
+      stripeAccount: accountId,
+    });
+
+    res.json({ success: true, balance });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

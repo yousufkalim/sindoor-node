@@ -36,6 +36,7 @@ router.post(
 router.get("/", users.getAll); // Get all users at once
 // Read
 router.post("/getByAdmin", checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
+
 router.get("/:userId", users.getById); // Get one user by it's id
 
 // Update
@@ -49,6 +50,24 @@ router.put(
 
 // Delete
 router.delete("/:userId", users.delete); // delete a specific user by it's id
+
+// add bank route
+router.put(
+  "/add-bank/:userId",
+  upload.fields([
+    {
+      name: "front",
+      maxCount: 1,
+    },
+    {
+      name: "back",
+      maxCount: 1,
+    },
+  ]),
+  users.addBank
+);
+
+router.get("/edit-bank/:userId", users.EditBank);
 
 // Add service Provider to favorite
 router.put("/:userId/:serviceProviderId", users.addToFavorite);

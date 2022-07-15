@@ -6,6 +6,7 @@ const Admins = require("../models/Admins");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { contactUsEmail } = require("../utils/sendEmail");
+const { translate } = require("../utils/translate");
 const tokenSecret = process.env.JWT_SECRET;
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 
@@ -24,12 +25,12 @@ exports.register = async (req, res) => {
       // If we found existing user in db
       return res
         .status(409)
-        .json({ success: false, message: "Admin already exists." });
+        .json({ success: false, message: translate["Admin already exists."] });
     } else if (password !== confirmPassword) {
       // Passwords not same
       return res.status(400).json({
         success: false,
-        message: "Password and Confirm Password are not same.",
+        message: translate["Password and Confirm password should be same."],
       });
     }
 
@@ -42,7 +43,9 @@ exports.register = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -63,12 +66,13 @@ exports.login = async (req, res) => {
       // If admin not found
       return res
         .status(404)
-        .json({ success: false, message: "Admin not found" });
+        .json({ success: false, message: translate["Admin not found"] });
     } else if (!admin.active) {
       // If admin not found
-      return res
-        .status(400)
-        .json({ success: false, message: "Your account is not activated" });
+      return res.status(400).json({
+        success: false,
+        message: translate["Your account is not activated"],
+      });
     }
 
     // Comparing password
@@ -78,7 +82,7 @@ exports.login = async (req, res) => {
       // If password not matched
       return res
         .status(400)
-        .json({ success: false, message: "Invalid Password" });
+        .json({ success: false, message: translate["Invalid Password"] });
     }
 
     // Creating payload with admin object
@@ -94,7 +98,9 @@ exports.login = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -122,6 +128,8 @@ exports.contact = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

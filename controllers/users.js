@@ -6,6 +6,7 @@ const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
 const bcrypt = require("bcryptjs");
 const { sendOTP } = require("../utils/sendOTP");
+const { translate } = require("../utils/translate");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -16,7 +17,7 @@ const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
  */
 exports.create = async (req, res) => {
   try {
-    let { email, password, phone } = req.body; // Getting required fields from body
+    let { email, password, confirmPassword, phone } = req.body; // Getting required fields from body
     const existingUser = await Users.findOne({ email }); // Finding already existing user
     const existingServiceProvider = await ServiceProviders.findOne({ email }); // Finding already existing user
 
@@ -25,7 +26,14 @@ exports.create = async (req, res) => {
       // If we found existing user in db
       return res
         .status(409)
-        .json({ success: false, message: "User already exists." });
+        .json({ success: false, message: translate["User already exists."] });
+    }
+
+    if (confirmPassword !== password) {
+      return res.status(400).json({
+        success: false,
+        message: translate["Password and Confirm password should be same."],
+      });
     }
 
     // Getting url of the image
@@ -47,7 +55,7 @@ exports.create = async (req, res) => {
       //   .then(() => {
       res.json({
         success: true,
-        message: "Account created and otp sent",
+        message: translate["Account created and otp sent"],
         user,
       }); //Success
       // })
@@ -58,7 +66,9 @@ exports.create = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -74,7 +84,9 @@ exports.getAll = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 /**
@@ -94,7 +106,9 @@ exports.getByAdmin = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -114,7 +128,9 @@ exports.getById = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -138,11 +154,17 @@ exports.update = async (req, res) => {
     }
 
     const user = await Users.findByIdAndUpdate(userId, req.body, { new: true }); // Updating the user
-    res.json({ success: true, message: "User updated successfully", user }); // Success
+    res.json({
+      success: true,
+      message: translate["User updated successfully"],
+      user,
+    }); // Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -159,7 +181,9 @@ exports.delete = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -176,7 +200,7 @@ exports.addToFavorite = async (req, res) => {
         return res.json({
           success: true,
           favorites: user.favorites,
-          message: "Service provider removed from favorite",
+          message: translate["Service provider removed from favorite"],
         });
       }
     } else {
@@ -185,13 +209,15 @@ exports.addToFavorite = async (req, res) => {
       return res.json({
         success: true,
         favorites: user.favorites,
-        message: "Service provider added to favorite",
+        message: translate["Service provider added to favorite"],
       });
     }
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -205,27 +231,13 @@ exports.getFavorites = async (req, res) => {
       _id: { $in: user.favorites },
     });
 
-    // .aggregate([
-    //   {
-    //     $match: {
-    //       _id: {
-    //         $in: [...user.favorites],
-    //       },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       _id: 1,
-    //       company_name: 1,
-    //       photo: 1,
-    //     },
-    //   },
-    // ]);
     res.json({ success: true, favorites });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -246,7 +258,9 @@ exports.addBank = async (req, res) => {
 
     let user = await Users.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "No user Found" });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["No user Found"] });
     }
 
     // creating company account
@@ -283,11 +297,15 @@ exports.addBank = async (req, res) => {
 
     user.save();
 
-    res.status(200).send({ success: true, message: "Bank Account added" });
+    res
+      .status(200)
+      .send({ success: true, message: translate["Bank Account added"] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -297,7 +315,9 @@ exports.EditBank = async (req, res) => {
 
     let user = await Users.findById(userId);
     if (!user) {
-      return res.status(404).json({ success: false, message: "No user Found" });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["No user Found"] });
     }
 
     const accountLink = await stripe.accountLinks.create({
@@ -310,7 +330,9 @@ exports.EditBank = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -325,6 +347,8 @@ exports.checkBalance = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

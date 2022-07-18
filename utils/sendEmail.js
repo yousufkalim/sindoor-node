@@ -3,6 +3,7 @@
  * @author Yousuf Kalim
  */
 var nodemailer = require("nodemailer");
+const { translate } = require("./translate");
 const sender_name = process.env.MAILER_DOMAIN;
 const sender_email = process.env.MAILER_EMAIL;
 const sender_password = process.env.MAILER_PASSWORD;
@@ -30,7 +31,7 @@ exports.contactUsEmail = (name, email, message) => {
     var mailOptions = {
       from: `${name} <${email}>`,
       to: contact_email,
-      subject: `Message from ${name}`,
+      subject: `${translate["Message from"]} ${name}`,
       text: message,
     };
 
@@ -41,7 +42,10 @@ exports.contactUsEmail = (name, email, message) => {
         reject(error);
       } else {
         // Success
-        resolve({ success: true, message: "Email sent successfully" });
+        resolve({
+          success: true,
+          message: translate["Email sent successfully"],
+        });
       }
     });
   });
@@ -68,7 +72,7 @@ exports.sendEmail = (email, password) => {
     var mailOptions = {
       from: `${sender_name} <${sender_email}>`,
       to: email,
-      subject: "Your password has been changed",
+      subject: translate["Your password has been changed"],
       html: EmailTemplate(password),
     };
 
@@ -79,7 +83,10 @@ exports.sendEmail = (email, password) => {
         reject(error);
       } else {
         // Success
-        resolve({ success: true, message: "Email sent successfully" });
+        resolve({
+          success: true,
+          message: translate["Email sent successfully"],
+        });
       }
     });
   });
@@ -123,10 +130,10 @@ const EmailTemplate = (password) => {
               text-align: left;">Sindoor.</span>
               <h2 style="
               font-family: Verdana; color: #e45a5a; ">
-                Hi there, your password is changed
+                ${translate["Hi there, your password is changed"]}
               </h2>
               <h4 style="font-family: Verdana; color: #787878;">
-                Your new Password is below
+                ${translate["Your new Password is below"]}
               </h4>
             </td>
           </tr>
@@ -155,14 +162,14 @@ const EmailTemplate = (password) => {
               <p align="center" style="
                   font-family: Verdana;
                   color: #787878;">
-                Use this password to login now.
+                ${translate["Use this password to login now."]}
               </p>
             </td>
           </tr>
           <tr>
             <td>
               <p align="center" style="color: #000; font-family: Verdana">
-                This email is generated automatically please do not reply.
+                ${translate["This email is generated automatically please do not reply."]}
               </p>
             </td>
           </tr>

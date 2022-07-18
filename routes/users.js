@@ -3,16 +3,12 @@
  * @author Yousuf Kalim
  * @author Najam Ul Saqib
  */
-const router = require("express").Router();
-const users = require("../controllers/users");
-const { upload } = require("../middleware/multer");
-const {
-  validateUser,
-  validateUserUpdate,
-  isValidated,
-} = require("../middleware/validators");
+const router = require('express').Router();
+const users = require('../controllers/users');
+const { upload } = require('../middleware/multer');
+const { validateUser, validateUserUpdate, isValidated } = require('../middleware/validators');
 
-const { checkAdminAuth } = require("../middleware/adminAuth");
+const { checkAdminAuth } = require('../middleware/adminAuth');
 
 /**
  ** User Routes
@@ -24,54 +20,42 @@ const { checkAdminAuth } = require("../middleware/adminAuth");
  */
 
 // Create - User Signup
-router.post(
-  "/",
-  upload.single("image"),
-  validateUser,
-  isValidated,
-  users.create
-);
+router.post('/', upload.single('image'), validateUser, isValidated, users.create);
 
 // Read
-router.get("/", users.getAll); // Get all users at once
+router.get('/', users.getAll); // Get all users at once
 // Read
-router.post("/getByAdmin", checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
+router.get('/getByAdmin', checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
 
-router.get("/:userId", users.getById); // Get one user by it's id
+router.get('/:userId', users.getById); // Get one user by it's id
 
 // Update
-router.put(
-  "/:userId",
-  upload.single("image"),
-  validateUserUpdate,
-  isValidated,
-  users.update
-); // Update a specific user by it's id
+router.put('/:userId', upload.single('image'), validateUserUpdate, isValidated, users.update); // Update a specific user by it's id
 
 // Delete
-router.delete("/:userId", users.delete); // delete a specific user by it's id
+router.delete('/:userId', users.delete); // delete a specific user by it's id
 
 // add bank route
 router.put(
-  "/add-bank/:userId",
+  '/add-bank/:userId',
   upload.fields([
     {
-      name: "front",
+      name: 'front',
       maxCount: 1,
     },
     {
-      name: "back",
+      name: 'back',
       maxCount: 1,
     },
   ]),
   users.addBank
 );
 
-router.get("/edit-bank/:userId", users.EditBank);
+router.get('/edit-bank/:userId', users.EditBank);
 
 // Add service Provider to favorite
-router.put("/:userId/:serviceProviderId", users.addToFavorite);
-router.get("/:userId/favorites", users.getFavorites);
+router.put('/:userId/:serviceProviderId', users.addToFavorite);
+router.get('/:userId/favorites', users.getFavorites);
 
 // Export
 module.exports = router;

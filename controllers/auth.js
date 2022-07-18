@@ -1,6 +1,7 @@
 /**
  * User auth controllers
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
@@ -8,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
 const { sendOTP } = require("../utils/sendOTP");
+const { translate } = require("../utils/translate");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const tokenSecret = process.env.JWT_SECRET;
 
@@ -39,7 +41,7 @@ exports.login = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -50,7 +52,7 @@ exports.login = async (req, res) => {
       // If password not matched
       return res
         .status(400)
-        .json({ success: false, message: "Invalid Password" });
+        .json({ success: false, message: translate["Invalid Password"] });
     }
 
     // Creating payload with user object
@@ -66,7 +68,9 @@ exports.login = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -83,7 +87,7 @@ exports.changePassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "New password and confirm password are not same",
+        message: translate["New password and confirm password are not same"],
       });
     }
 
@@ -94,7 +98,7 @@ exports.changePassword = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -103,7 +107,7 @@ exports.changePassword = async (req, res) => {
     if (!isMatched) {
       return res
         .status(400)
-        .json({ success: false, message: "Incorrect old Password" });
+        .json({ success: false, message: translate["Incorrect old Password"] });
     }
 
     // Generate token
@@ -111,11 +115,13 @@ exports.changePassword = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, user, message: "Password changed." });
+    res.json({ success: true, user, message: translate["Password changed."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -134,7 +140,7 @@ exports.forgot = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -149,19 +155,25 @@ exports.forgot = async (req, res) => {
         await user.save();
 
         // Done
-        res.json({ success: true, message: "Email sent successfully" });
+        res.json({
+          success: true,
+          message: translate["Email sent successfully"],
+        });
       })
       .catch((err) => {
         // Error handling
         console.log("Error ----> ", err);
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
+        res.status(500).json({
+          success: false,
+          message: translate["Internal server error"],
+        });
       });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -192,22 +204,26 @@ exports.verifyOTP = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
     if (user.otp !== otp) {
-      return res.status(404).json({ success: false, message: "Invalid OTP" });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["Invalid OTP"] });
     }
 
     user.otp = null;
     user.verified = true;
     user.save();
-    res.json({ success: true, user, message: "Account Verified." });
+    res.json({ success: true, user, message: translate["Account Verified."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -227,7 +243,7 @@ exports.resendOtp = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -244,7 +260,7 @@ exports.resendOtp = async (req, res) => {
     // On success
     return res.json({
       success: true,
-      message: "OTP sent",
+      message: translate["OTP sent"],
       user,
     }); //Success
     // })
@@ -255,6 +271,8 @@ exports.resendOtp = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

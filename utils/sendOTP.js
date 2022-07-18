@@ -3,6 +3,8 @@
  * @author Najam Ul Saqib
  */
 
+const { translate } = require("./translate");
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID; // Twilio account sid
 const authToken = process.env.TWILIO_AUTH_TOKEN; // Twilio account auth token
 const phoneNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio account phone number
@@ -19,13 +21,13 @@ exports.sendOTP = (phone, otp) => {
     client.messages
       .create({
         // message options
-        body: `Your OTP is ${otp}`,
+        body: `${translate["Your OTP is"]} ${otp}`,
         from: phoneNumber,
         to: phone,
       })
       .then((message) => {
         // On message successfully sent
-        resolve({ success: true, message: "OTP sent" });
+        resolve({ success: true, message: translate["OTP sent"] });
       })
       .catch((err) => {
         // On error

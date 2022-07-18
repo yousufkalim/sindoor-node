@@ -3,6 +3,7 @@
  * @author Yousuf Kalim
  */
 const jwt = require("jsonwebtoken");
+const { translate } = require("../utils/translate");
 const tokenSecret = process.env.JWT_SECRET;
 
 // Check auth
@@ -14,7 +15,7 @@ exports.checkAuth = (req, res, next) => {
   if (!header || !header.startsWith("Bearer")) {
     return res.status(403).json({
       success: false,
-      message: "No token found, Authorization denied",
+      message: translate["No token found, Authorization denied"],
     });
   }
 
@@ -36,6 +37,9 @@ exports.checkAuth = (req, res, next) => {
     // If not
     res
       .status(403)
-      .json({ success: false, message: "Your session has been expired" });
+      .json({
+        success: false,
+        message: translate["Your session has been expired"],
+      });
   }
 };

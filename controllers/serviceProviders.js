@@ -2,10 +2,11 @@
  * Service provider CRUD controllers
  * @author Najam Ul Saqib
  */
-const Users = require('../models/Users');
-const ServiceProviders = require('../models/ServiceProviders');
-const bcrypt = require('bcryptjs');
-const { sendOTP } = require('../utils/sendOTP');
+const Users = require("../models/Users");
+const ServiceProviders = require("../models/ServiceProviders");
+const bcrypt = require("bcryptjs");
+const { sendOTP } = require("../utils/sendOTP");
+const { translate } = require("../utils/translate");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
@@ -16,14 +17,23 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
  */
 exports.create = async (req, res) => {
   try {
-    let { email, password, phone } = req.body; // Getting required fields from body
+    let { email, password, confirmPassword, phone } = req.body; // Getting required fields from body
     const existingServiceProvider = await ServiceProviders.findOne({ email }); // Finding already existing Service Provider
     const existingUser = await Users.findOne({ email }); // Finding already existing user
 
     // Extra Validations
     if (existingUser || existingServiceProvider) {
       // If we found existing user in db
-      return res.status(409).json({ success: false, message: 'User already exists.' });
+      return res
+        .status(409)
+        .json({ success: false, message: translate["User already exists."] });
+    }
+
+    if (confirmPassword !== password) {
+      return res.status(400).json({
+        success: false,
+        message: translate["Password and Confirm password should be same."],
+      });
     }
 
     // Getting url of the image
@@ -51,7 +61,7 @@ exports.create = async (req, res) => {
       //   .then(() => {
       res.json({
         success: true,
-        message: 'Account created and otp sent',
+        message: translate["Account created and otp sent"],
         user,
       }); //Success
       // })
@@ -61,8 +71,10 @@ exports.create = async (req, res) => {
     });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -89,8 +101,10 @@ exports.getFew = async (req, res) => {
     res.json({ success: true, users: serviceProviders });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -108,7 +122,7 @@ exports.getById = async (req, res) => {
     if (!serviceProvider) {
       return res.json({
         success: false,
-        message: 'No Service provider found',
+        message: translate["No Service provider found"],
       });
     }
 
@@ -121,8 +135,10 @@ exports.getById = async (req, res) => {
     });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -138,8 +154,10 @@ exports.delete = async (req, res) => {
     res.json({ success: true, user });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -180,13 +198,15 @@ exports.update = async (req, res) => {
     }); // Updating the user
     res.json({
       success: true,
-      message: 'User updated successfully',
+      message: translate["User updated successfully"],
       user,
     }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -208,8 +228,10 @@ exports.getByAdmin = async (req, res) => {
     res.json({ success: true, serviceproviders, totalResults }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -228,8 +250,10 @@ exports.getUsersForMap = async (req, res) => {
     return res.json({ users: serviceProviders });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -251,17 +275,19 @@ exports.rateUser = async (req, res) => {
         }
       );
 
-      return res.json({ success: true, message: 'Rating Updated' });
+      return res.json({ success: true, message: translate["Rating Updated"] });
     } else {
       let serviceProvider = await ServiceProviders.findById(userId);
       serviceProvider.ratings.push(req.body);
       serviceProvider.save();
-      res.json({ success: true, message: 'Thank You for rating' });
+      res.json({ success: true, message: translate["Thank You for rating"] });
     }
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -282,7 +308,9 @@ exports.addBank = async (req, res) => {
 
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
-      return res.status(404).json({ success: false, message: 'No user Found' });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["No user Found"] });
     }
 
     // creating company account
@@ -328,11 +356,15 @@ exports.addBank = async (req, res) => {
 
     serviceProvider.save();
 
-    res.status(200).send({ success: true, message: 'Bank Account added' });
+    res
+      .status(200)
+      .send({ success: true, message: translate["Bank Account added"] });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -342,7 +374,9 @@ exports.EditBank = async (req, res) => {
 
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
-      return res.status(404).json({ success: false, message: 'No user Found' });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["No user Found"] });
     }
 
     const accountLink = await stripe.accountLinks.create({
@@ -354,7 +388,9 @@ exports.EditBank = async (req, res) => {
     res.status(200).json({ success: true, url: accountLink });
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

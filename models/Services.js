@@ -42,6 +42,10 @@ const serviceSchema = new mongoose.Schema(
       require: true,
     },
     phone: String,
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

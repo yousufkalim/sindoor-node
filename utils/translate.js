@@ -124,4 +124,7 @@ exports.translate = {
     "Fournisseur de services supprimé des favoris",
   "Service provider added to favorite":
     "Fournisseur de services ajouté aux favoris",
+  "Account Deleted.": "Compte supprimé.",
+  "New Password cannot be same as old Password.":
+    "Le nouveau mot de passe ne peut pas être le même que l'ancien mot de passe.",
 };

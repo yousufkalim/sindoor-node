@@ -10,7 +10,10 @@ const { translate } = require("../utils/translate");
 exports.getAllByUserID = async (req, res) => {
   try {
     let { userId } = req.params;
-    let services = await Services.find({ serviceProvider: userId });
+    let services = await Services.find({
+      serviceProvider: userId,
+      deleted: false,
+    });
     res.json({ success: true, services });
   } catch (err) {
     // Error handling
@@ -24,7 +27,10 @@ exports.getAllByUserID = async (req, res) => {
 exports.getFewByUserId = async (req, res) => {
   try {
     let { userId } = req.params;
-    let services = await Services.find({ serviceProvider: userId }).limit(5);
+    let services = await Services.find({
+      serviceProvider: userId,
+      deleted: false,
+    }).limit(5);
     res.json({ success: true, services });
   } catch (err) {
     // Error handling
@@ -114,20 +120,22 @@ exports.editService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     let { serviceId } = req.params;
-    await Services.findByIdAndDelete(serviceId).then(async (resp) => {
-      await ServiceProviders.findOneAndUpdate(
-        {
-          _id: resp.serviceProvider,
-        },
-        {
-          $pull: {
-            services: {
-              service: serviceId,
-            },
+    await Services.findByIdAndUpdate(serviceId, { deleted: true }).then(
+      async (resp) => {
+        await ServiceProviders.findOneAndUpdate(
+          {
+            _id: resp.serviceProvider,
           },
-        }
-      );
-    });
+          {
+            $pull: {
+              services: {
+                service: serviceId,
+              },
+            },
+          }
+        );
+      }
+    );
     res.json({ success: true, message: translate["Service deleted."] });
   } catch (err) {
     // Error handling
@@ -168,7 +176,7 @@ exports.getRandomServiceProviders = async (req, res) => {
       });
     }
 
-    let services = await Services.find({ category })
+    let services = await Services.find({ category, deleted: false })
       .skip(page * limit)
       .limit(limit)
       .populate("serviceProvider", "_id company_name location description");

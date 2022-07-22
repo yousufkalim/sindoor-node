@@ -21,38 +21,116 @@ const tokenSecret = process.env.JWT_SECRET;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { email, password, fcmToken } = req.body;
+    const { email, password, fcmToken, data, type } = req.body;
     let role = "User";
+    let user = {};
     // Getting user from db
-    let user = await Users.findOneAndUpdate(
-      { email },
-      { fcmToken },
-      { new: true }
-    );
+    switch (type) {
+      case "apple":
+        user = await Users.findOneAndUpdate(
+          { apple: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { apple: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              apple: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      case "facebook":
+        user = await Users.findOneAndUpdate(
+          { facebook: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { facebook: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              facebook: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      case "google":
+        user = await Users.findOneAndUpdate(
+          { google: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { google: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              google: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      default:
+        // Login with ID Password
+        user = await Users.findOneAndUpdate(
+          {
+            email,
+            deleted: false,
+          },
+          { fcmToken },
+          { new: true }
+        );
 
-    if (!user) {
-      // If user not found check from service providers
-      role = "ServiceProvider";
-      user = await ServiceProviders.findOneAndUpdate(
-        { email },
-        { fcmToken },
-        { new: true }
-      ); // find user from service provider.
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: translate["User not found"] });
-      }
-    }
+        if (!user) {
+          // If user not found check from service providers
+          role = "ServiceProvider";
+          user = await ServiceProviders.findOneAndUpdate(
+            { email },
+            { fcmToken },
+            { new: true }
+          ); // find user from service provider.
+          if (!user) {
+            return res
+              .status(404)
+              .json({ success: false, message: translate["User not found"] });
+          }
+        }
 
-    // Comparing password
-    const isMatched = bcrypt.compareSync(password, user.password);
+        // Comparing password
+        const isMatched = bcrypt.compareSync(password, user.password);
 
-    if (!isMatched) {
-      // If password not matched
-      return res
-        .status(400)
-        .json({ success: false, message: translate["Invalid Password"] });
+        if (!isMatched) {
+          // If password not matched
+          return res
+            .status(400)
+            .json({ success: false, message: translate["Invalid Password"] });
+        }
+        break;
     }
 
     // Creating payload with user object
@@ -102,12 +180,21 @@ exports.changePassword = async (req, res) => {
       }
     }
 
-    const isMatched = bcrypt.compareSync(oldPassword, user.password);
+    let isMatched = bcrypt.compareSync(oldPassword, user.password);
 
     if (!isMatched) {
       return res
         .status(400)
         .json({ success: false, message: translate["Incorrect old Password"] });
+    }
+
+    isMatched = bcrypt.compareSync(newPassword, user.password);
+
+    if (isMatched) {
+      return res.status(400).json({
+        success: false,
+        message: translate["New Password cannot be same as old Password."],
+      });
     }
 
     // Generate token

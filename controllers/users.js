@@ -176,8 +176,52 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
-    const user = await Users.findByIdAndDelete(userId); // Deleting the user
-    res.json({ success: true, user }); // Success
+    const { password, isSocial } = req.body;
+
+    let user = await Users.findOne({
+      _id: userId,
+      deleted: false,
+    });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: translate["User not found"] });
+    }
+    if (isSocial) {
+      user = await Users.findByIdAndUpdate(
+        userId,
+        {
+          deleted: true,
+          facebook: user?.facebook && `deleted-${user?.facebook}`,
+          google: user?.google && `deleted-${user?.google}`,
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      console.log(req.body, "pass");
+      console.log(user.password, "user");
+      const isMatched = bcrypt.compareSync(password, user.password);
+      if (!isMatched) {
+        // If password not matched
+        return res
+          .status(400)
+          .json({ success: false, message: translate["Invalid Password"] });
+      }
+      user = await Users.findByIdAndUpdate(
+        userId,
+        {
+          deleted: true,
+          email: `deleted-${user.email}`,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    res.json({ success: true, message: translate["Account Deleted."] }); // Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

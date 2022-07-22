@@ -20,7 +20,7 @@ const {
  */
 
 // Read
-router.post("/login", validateLogin, isValidated, auth.login); // Get all users at once
+router.post("/login", auth.login); // Get all users at once
 
 // check auth
 router.get("/", checkAuth, auth.confirmAuth);

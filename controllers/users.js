@@ -192,8 +192,9 @@ exports.delete = async (req, res) => {
         userId,
         {
           deleted: true,
-          facebook: user?.facebook && `deleted-${user?.facebook}`,
-          google: user?.google && `deleted-${user?.google}`,
+          facebook: user?.facebook && `${Date.now()}deleted-${user?.facebook}`,
+          google: user?.google && `${Date.now()}deleted-${user?.google}`,
+          apple: user?.apple && `${Date.now()}deleted-${user?.apple}`,
         },
         {
           new: true,
@@ -213,7 +214,7 @@ exports.delete = async (req, res) => {
         userId,
         {
           deleted: true,
-          email: `deleted-${user.email}`,
+          email: `${Date.now()}deleted-${user.email}`,
         },
         {
           new: true,

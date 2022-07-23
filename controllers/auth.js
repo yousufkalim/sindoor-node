@@ -339,22 +339,20 @@ exports.resendOtp = async (req, res) => {
     user.otp = otp; // allot new otp to user
     user.save(); // save user object
 
-    //! uncomment send otp
-    //TODO: Change Phone number format to french before production.
     // Send OTP message to user phone number
-    // sendOTP(user.phone, otp)
-    //   .then(() => {
-    // On success
-    return res.json({
-      success: true,
-      message: translate["OTP sent"],
-      user,
-    }); //Success
-    // })
-    // .catch((err) => {
-    //   // On error
-    //   throw err;
-    // });
+    sendOTP(user.phone, otp)
+      .then(() => {
+        // On success
+        return res.json({
+          success: true,
+          message: translate["OTP sent"],
+          user,
+        }); //Success
+      })
+      .catch((err) => {
+        // On error
+        throw err;
+      });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

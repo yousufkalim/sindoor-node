@@ -8,7 +8,7 @@ const bcrypt = require("bcryptjs");
 const { sendOTP } = require("../utils/sendOTP");
 const { translate } = require("../utils/translate");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 /**
  * Create User - Signup
@@ -54,20 +54,18 @@ exports.create = async (req, res) => {
 
     // Adding user in db
     await ServiceProviders.create(req.body).then((user) => {
-      //! uncomment send otp
-      //TODO: Change Phone number format to french before production.
       // Sending otp to user
-      // sendOTP(phone, otp)
-      //   .then(() => {
-      res.json({
-        success: true,
-        message: translate["Account created and otp sent"],
-        user,
-      }); //Success
-      // })
-      // .catch((err) => {
-      //   throw err;
-      // });
+      sendOTP(phone, otp)
+        .then(() => {
+          res.json({
+            success: true,
+            message: translate["Account created and otp sent"],
+            user,
+          }); //Success
+        })
+        .catch((err) => {
+          throw err;
+        });
     });
   } catch (err) {
     // Error handling
@@ -93,7 +91,7 @@ exports.getFew = async (req, res) => {
         $project: {
           _id: 1,
           company_name: 1,
-          'location.city': 1,
+          "location.city": 1,
           photo: 1,
         },
       },
@@ -117,8 +115,8 @@ exports.getById = async (req, res) => {
   try {
     let { userId } = req.params;
     let serviceProvider = await ServiceProviders.findById(userId)
-      .populate('services.service')
-      .populate('ratings.user', 'first_name last_name photo');
+      .populate("services.service")
+      .populate("ratings.user", "first_name last_name photo");
     if (!serviceProvider) {
       return res.json({
         success: false,
@@ -126,8 +124,13 @@ exports.getById = async (req, res) => {
       });
     }
 
-    let ratingsSum = serviceProvider.ratings.reduce((prev, cnt) => prev + cnt.rating, 0);
-    let rating = (ratingsSum / (serviceProvider.ratings.length || 1)).toFixed(1);
+    let ratingsSum = serviceProvider.ratings.reduce(
+      (prev, cnt) => prev + cnt.rating,
+      0
+    );
+    let rating = (ratingsSum / (serviceProvider.ratings.length || 1)).toFixed(
+      1
+    );
 
     res.json({
       success: true,
@@ -218,8 +221,8 @@ exports.update = async (req, res) => {
 exports.getByAdmin = async (req, res) => {
   try {
     const { pageNumber, pageSize } = req.body;
-    console.log(pageNumber, 'pageNumber');
-    console.log(pageSize, 'pageSize');
+    console.log(pageNumber, "pageNumber");
+    console.log(pageSize, "pageSize");
     const serviceproviders = await ServiceProviders.find()
       .skip(pageNumber * pageSize)
       .limit(parseInt(pageSize))
@@ -242,8 +245,8 @@ exports.getUsersForMap = async (req, res) => {
         $project: {
           _id: 1,
           company_name: 1,
-          'location.lat': 1,
-          'location.lng': 1,
+          "location.lat": 1,
+          "location.lng": 1,
         },
       },
     ]);
@@ -262,16 +265,16 @@ exports.rateUser = async (req, res) => {
     let { userId } = req.params;
     let alreadyRated = await ServiceProviders.findOne({
       _id: userId,
-      'ratings.user': req.body.user,
+      "ratings.user": req.body.user,
     });
     if (alreadyRated) {
       let alreadyRated = await ServiceProviders.findOneAndUpdate(
         {
           _id: userId,
-          'ratings.user': req.body.user,
+          "ratings.user": req.body.user,
         },
         {
-          $set: { 'ratings.$': req.body },
+          $set: { "ratings.$": req.body },
         }
       );
 
@@ -300,11 +303,12 @@ exports.addBank = async (req, res) => {
     const accountToken = req.body.token;
     const personToken = req.body.personToken;
 
-    let front = req.files['front'] !== undefined ? req.files['front'][0].path : '';
-    front !== '' && (front = front.replace(/\\/g, '/'));
+    let front =
+      req.files["front"] !== undefined ? req.files["front"][0].path : "";
+    front !== "" && (front = front.replace(/\\/g, "/"));
 
-    let back = req.files['back'] !== undefined ? req.files['back'][0].path : '';
-    back !== '' && (back = back.replace(/\\/g, '/'));
+    let back = req.files["back"] !== undefined ? req.files["back"][0].path : "";
+    back !== "" && (back = back.replace(/\\/g, "/"));
 
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
@@ -315,25 +319,25 @@ exports.addBank = async (req, res) => {
 
     // creating company account
     const account = await stripe.account.create({
-      type: 'custom',
-      country: 'FR',
+      type: "custom",
+      country: "FR",
       account_token: accountToken,
       email: serviceProvider.email,
       business_profile: {
         name: serviceProvider.name,
-        mcc: '5811',
-        url: 'http://google.com',
+        mcc: "5811",
+        url: "http://google.com",
       },
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },
       },
       external_account: {
-        object: 'bank_account',
+        object: "bank_account",
         account_number: iban,
         bank_name: bankName,
-        country: 'FR',
-        currency: 'eur',
+        country: "FR",
+        currency: "eur",
       },
     });
 
@@ -383,7 +387,7 @@ exports.EditBank = async (req, res) => {
       account: serviceProvider.bank.stripeID,
       refresh_url: `${process.env.CLIENT_URL}/redirect=true`,
       return_url: `${process.env.CLIENT_URL}/redirect=true`,
-      type: 'account_update',
+      type: "account_update",
     });
     res.status(200).json({ success: true, url: accountLink });
   } catch (err) {

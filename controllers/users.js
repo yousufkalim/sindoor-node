@@ -48,20 +48,18 @@ exports.create = async (req, res) => {
 
     // Adding user in db
     await Users.create(req.body).then((user) => {
-      //! uncomment send otp
-      //TODO: Change Phone number format to french before production.
       // Sending otp to user
-      // sendOTP(phone, otp)
-      //   .then(() => {
-      res.json({
-        success: true,
-        message: translate["Account created and otp sent"],
-        user,
-      }); //Success
-      // })
-      // .catch((err) => {
-      //   throw err;
-      // });
+      sendOTP(phone, otp)
+        .then(() => {
+          res.json({
+            success: true,
+            message: translate["Account created and otp sent"],
+            user,
+          }); //Success
+        })
+        .catch((err) => {
+          throw err;
+        });
     });
   } catch (err) {
     // Error handling

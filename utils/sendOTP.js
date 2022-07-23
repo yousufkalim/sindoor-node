@@ -21,9 +21,9 @@ exports.sendOTP = (phone, otp) => {
     client.messages
       .create({
         // message options
-        body: `${translate["Your OTP is"]} ${otp}`,
+        body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
         from: phoneNumber,
-        to: phone,
+        to: `+33${phone.substring(1)}`,
       })
       .then((message) => {
         // On message successfully sent

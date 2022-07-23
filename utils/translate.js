@@ -52,7 +52,8 @@ exports.translate = {
     "Aucun jeton trouvé, autorisation refusée",
   "Your session has been expired": "Votre session a expiré",
   "OTP sent": "OTP envoyé",
-  "Your OTP is": "Votre OTP est",
+  "is your Sindoor confirmation code.":
+    "est votre code de confirmation Sindoor.",
   "Message from": "Message de",
   "Email sent successfully": "E-mail envoyé avec succès",
   "Your password has been changed": "Votre mot de passe a été changé",

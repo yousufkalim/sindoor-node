@@ -48,20 +48,18 @@ exports.create = async (req, res) => {
 
     // Adding user in db
     await Users.create(req.body).then((user) => {
-      //! uncomment send otp
-      //TODO: Change Phone number format to french before production.
       // Sending otp to user
-      // sendOTP(phone, otp)
-      //   .then(() => {
-      res.json({
-        success: true,
-        message: translate["Account created and otp sent"],
-        user,
-      }); //Success
-      // })
-      // .catch((err) => {
-      //   throw err;
-      // });
+      sendOTP(phone, otp)
+        .then(() => {
+          res.json({
+            success: true,
+            message: translate["Account created and otp sent"],
+            user,
+          }); //Success
+        })
+        .catch((err) => {
+          throw err;
+        });
     });
   } catch (err) {
     // Error handling
@@ -176,8 +174,53 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
-    const user = await Users.findByIdAndDelete(userId); // Deleting the user
-    res.json({ success: true, user }); // Success
+    const { password, isSocial } = req.body;
+
+    let user = await Users.findOne({
+      _id: userId,
+      deleted: false,
+    });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: translate["User not found"] });
+    }
+    if (isSocial) {
+      user = await Users.findByIdAndUpdate(
+        userId,
+        {
+          deleted: true,
+          facebook: user?.facebook && `${Date.now()}deleted-${user?.facebook}`,
+          google: user?.google && `${Date.now()}deleted-${user?.google}`,
+          apple: user?.apple && `${Date.now()}deleted-${user?.apple}`,
+        },
+        {
+          new: true,
+        }
+      );
+    } else {
+      console.log(req.body, "pass");
+      console.log(user.password, "user");
+      const isMatched = bcrypt.compareSync(password, user.password);
+      if (!isMatched) {
+        // If password not matched
+        return res
+          .status(400)
+          .json({ success: false, message: translate["Invalid Password"] });
+      }
+      user = await Users.findByIdAndUpdate(
+        userId,
+        {
+          deleted: true,
+          email: `${Date.now()}deleted-${user.email}`,
+        },
+        {
+          new: true,
+        }
+      );
+    }
+
+    res.json({ success: true, message: translate["Account Deleted."] }); // Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

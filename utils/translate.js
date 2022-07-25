@@ -52,7 +52,8 @@ exports.translate = {
     "Aucun jeton trouvé, autorisation refusée",
   "Your session has been expired": "Votre session a expiré",
   "OTP sent": "OTP envoyé",
-  "Your OTP is": "Votre OTP est",
+  "is your Sindoor confirmation code.":
+    "est votre code de confirmation Sindoor.",
   "Message from": "Message de",
   "Email sent successfully": "E-mail envoyé avec succès",
   "Your password has been changed": "Votre mot de passe a été changé",
@@ -124,4 +125,7 @@ exports.translate = {
     "Fournisseur de services supprimé des favoris",
   "Service provider added to favorite":
     "Fournisseur de services ajouté aux favoris",
+  "Account Deleted.": "Compte supprimé.",
+  "New Password cannot be same as old Password.":
+    "Le nouveau mot de passe ne peut pas être le même que l'ancien mot de passe.",
 };

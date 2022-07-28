@@ -136,6 +136,17 @@ exports.validatePayment = [
     .withMessage(translate["Payment cannot be negative"]),
 ];
 
+exports.validateSendEmail = [
+  check("name", translate["Name is required"]).notEmpty().trim(),
+  check("email")
+    .trim()
+    .notEmpty()
+    .withMessage(translate["Email is required."])
+    .isEmail()
+    .withMessage(translate["Invalid Email."]),
+  check("message", translate["Message is required"]).notEmpty().trim(),
+];
+
 // Create event validation
 exports.validateWishlist = [
   check("eventId", translate["Event ID is required"]).notEmpty(),

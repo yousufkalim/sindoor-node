@@ -129,4 +129,5 @@ exports.translate = {
   "New Password cannot be same as old Password.":
     "Le nouveau mot de passe ne peut pas être le même que l'ancien mot de passe.",
   "Event deleted.": "Événement supprimé.",
+  "Message is required": "Un message est requis",
 };

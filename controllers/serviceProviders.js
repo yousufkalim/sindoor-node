@@ -221,13 +221,36 @@ exports.update = async (req, res) => {
 exports.getByAdmin = async (req, res) => {
   try {
     const { pageNumber, pageSize } = req.body;
-    console.log(pageNumber, "pageNumber");
-    console.log(pageSize, "pageSize");
+    console.log({ pageNumber, pageSize });
     const serviceproviders = await ServiceProviders.find()
       .skip(pageNumber * pageSize)
       .limit(parseInt(pageSize))
       .sort({ date: -1 }); // Finding all the users from db
     const totalResults = await ServiceProviders.find().countDocuments();
+    res.json({ success: true, serviceproviders, totalResults }); // Success
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
+  }
+};
+
+/**
+ * Get Service Providers
+ * @param {object} req
+ * @param {object} res
+ */
+exports.getAllServiceProviders = async (req, res) => {
+  try {
+    const { pageNumber, pageSize } = req.query;
+    let serviceproviders = await ServiceProviders.find()
+      .skip(parseInt(pageNumber) * parseInt(pageSize))
+      .limit(parseInt(pageSize));
+    // Finding all the users from db
+    const totalResults = await ServiceProviders.find().countDocuments();
+    serviceproviders = serviceproviders.sort(() => 0.5 - Math.random());
     res.json({ success: true, serviceproviders, totalResults }); // Success
   } catch (err) {
     // Error handling

@@ -410,6 +410,26 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
+//* Delete Event
+exports.delete = async (req, res) => {
+  try {
+    let event = await Events.findByIdAndDelete(req.params.eventId);
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: translate["Event not found."],
+      });
+    }
+    res.json({ success: true, message: translate["Event deleted."] });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
+  }
+};
+
 //* Remove Guest from event
 exports.removeGuest = async (req, res) => {
   try {

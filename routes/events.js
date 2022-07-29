@@ -55,6 +55,9 @@ router.put("/status/:eventId/:userId", events.updateGuestStatus);
 // Update Event
 router.put("/:eventId", upload.array("photos"), checkAuth, events.updateEvent);
 
+// delete event
+router.delete("/:eventId", events.delete);
+
 // Crete event timeline
 router.post(
   "/:eventId/timeline",

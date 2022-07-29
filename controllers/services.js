@@ -169,12 +169,12 @@ exports.getRandomServiceProviders = async (req, res) => {
     let { category, page } = req.query;
     if (!page) page = 0;
     const limit = 20;
-    if (!category) {
-      return res.json({
-        success: false,
-        message: translate["Category is required."],
-      });
-    }
+    // if (!category) {
+    //   return res.json({
+    //     success: false,
+    //     message: translate["Category is required."],
+    //   });
+    // }
 
     let services = await Services.find({ category, deleted: false })
       .skip(page * limit)

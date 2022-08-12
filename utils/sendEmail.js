@@ -8,7 +8,6 @@ const sender_name = process.env.MAILER_DOMAIN;
 const sender_email = process.env.MAILER_EMAIL;
 const sender_password = process.env.MAILER_PASSWORD;
 const contact_email = process.env.CONTACT_EMAIL;
-const { logo } = require("../utils/helper");
 
 /**
  * sendEmail

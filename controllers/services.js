@@ -179,7 +179,10 @@ exports.getRandomServiceProviders = async (req, res) => {
     let services = await Services.find({ category, deleted: false })
       .skip(page * limit)
       .limit(limit)
-      .populate("serviceProvider", "_id company_name location description");
+      .populate(
+        "serviceProvider",
+        "_id company_name location description photo"
+      );
     services.sort(() => Math.random() - 0.5);
 
     res.json({ success: true, services, page });

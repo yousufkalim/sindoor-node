@@ -108,7 +108,7 @@ exports.translate = {
   "Like Removed.": "Comme supprimé.",
   "Image liked.": "Image aimée.",
   "Images Approved.": "Images approuvées.",
-  "User already exists.": "User already exists.",
+  "User already exists.": "L'utilisateur existe déjà.",
   "Account created and otp sent": "Compte créé et otp envoyé",
   "No Service provider found": "Aucun fournisseur de services trouvé",
   "User updated successfully": "Utilisateur mis à jour avec succès",

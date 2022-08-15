@@ -55,17 +55,12 @@ exports.create = async (req, res) => {
     // Adding user in db
     await ServiceProviders.create(req.body).then((user) => {
       // Sending otp to user
-      sendOTP(phone, otp)
-        .then(() => {
-          res.json({
-            success: true,
-            message: translate["Account created and otp sent"],
-            user,
-          }); //Success
-        })
-        .catch((err) => {
-          throw err;
-        });
+      sendOTP(phone, otp);
+      res.json({
+        success: true,
+        message: translate["Account created and otp sent"],
+        user,
+      }); //Success
     });
   } catch (err) {
     // Error handling

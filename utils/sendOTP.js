@@ -18,20 +18,24 @@ const client = require("twilio")(accountSid, authToken);
 exports.sendOTP = (phone, otp) => {
   return new Promise((resolve, reject) => {
     // Sending message to client
-    client.messages
-      .create({
-        // message options
-        body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
-        from: phoneNumber,
-        to: `+33${phone.substring(1)}`,
-      })
-      .then((message) => {
-        // On message successfully sent
-        resolve({ success: true, message: translate["OTP sent"] });
-      })
-      .catch((err) => {
-        // On error
-        reject(err);
-      });
+    try {
+      client.messages
+        .create({
+          // message options
+          body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
+          from: phoneNumber,
+          to: `+33${phone.substring(1)}`,
+        })
+        .then((message) => {
+          // On message successfully sent
+          resolve({ success: true, message: translate["OTP sent"] });
+        })
+        .catch((err) => {
+          // On error
+          reject(err);
+        });
+    } catch (err) {
+      reject(err);
+    }
   });
 };

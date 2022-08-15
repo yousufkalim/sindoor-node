@@ -19,19 +19,19 @@ exports.sendOTP = (phone, otp) => {
   return new Promise((resolve, reject) => {
     // Sending message to client
     client.messages
-      .create({
-        // message options
-        body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
-        from: phoneNumber,
-        to: `+33${phone.substring(1)}`,
-      })
-      .then((message) => {
-        // On message successfully sent
-        resolve({ success: true, message: translate["OTP sent"] });
-      })
-      .catch((err) => {
-        // On error
-        reject(err);
+        .create({
+          // message options
+          body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
+          from: phoneNumber,
+          to: `+33${phone.substring(1)}`,
+        })
+        .then((message) => {
+          // On message successfully sent
+          resolve({ success: true, message: translate["OTP sent"] });
+        })
+        .catch((err) => {
+          // On error
+          reject(err);
       });
   });
 };

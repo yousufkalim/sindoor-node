@@ -177,11 +177,13 @@ exports.update = async (req, res) => {
       req.body.password = undefined;
     }
 
-    let cultureArr = JSON.parse(req.body.culture);
-    cultureArr.forEach((val, i) => {
-      cultureArr[i] = JSON.parse(val);
-    });
-    req.body.culture = cultureArr;
+    if (req.body.culture) {
+      let cultureArr = JSON.parse(req.body.culture);
+      cultureArr.forEach((val, i) => {
+        cultureArr[i] = JSON.parse(val);
+      });
+      req.body.culture = cultureArr;
+    }
 
     // Getting url of the image
     if (req.files) {

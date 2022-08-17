@@ -211,13 +211,15 @@ exports.validateService = [
     .withMessage(translate["Name of service is required."]),
   check("price")
     .notEmpty()
-    .withMessage(translate["Price of service is required."]),
+    .withMessage(translate["Price of service is required."])
+    .isNumeric()
+    .withMessage(translate["Price can only be numeric"]),
   check("deposit")
     .notEmpty()
-    .withMessage(translate["Deposit of service is required."]),
-  check("fixed_amount")
-    .notEmpty()
-    .withMessage(translate["Fixed Amount of service is required."]),
+    .withMessage(translate["Deposit of service is required."])
+    .isNumeric()
+    .withMessage(translate["Deposit can only be numeric"]),
+  check("type").notEmpty().withMessage(translate["Price Type is require."]),
   check("phone")
     .trim()
     .notEmpty()

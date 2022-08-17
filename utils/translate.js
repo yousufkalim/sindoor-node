@@ -40,6 +40,7 @@ exports.translate = {
   "Name of service is required.": "Le nom du service est requis.",
   "Price of service is required.": "Le prix du service est requis.",
   "Deposit of service is required.": "Une caution de service est demandée.",
+  "Deposit can only be numeric": "Dépôt ne peut être que numérique",
   "Fixed Amount of service is required.":
     "Un montant fixe de service est requis.",
   "Location of service is required.": "Le lieu du service est requis.",
@@ -130,4 +131,5 @@ exports.translate = {
     "Le nouveau mot de passe ne peut pas être le même que l'ancien mot de passe.",
   "Event deleted.": "Événement supprimé.",
   "Message is required": "Un message est requis",
+  "Price Type is require.": "Le type de prix est requis.",
 };

@@ -3,6 +3,8 @@
  * @author Najam Ul Saqib
  */
 
+const { translate } = require("./translate");
+
 const accountSid = process.env.TWILIO_ACCOUNT_SID; // Twilio account sid
 const authToken = process.env.TWILIO_AUTH_TOKEN; // Twilio account auth token
 const phoneNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio account phone number
@@ -17,19 +19,19 @@ exports.sendOTP = (phone, otp) => {
   return new Promise((resolve, reject) => {
     // Sending message to client
     client.messages
-      .create({
-        // message options
-        body: `Your OTP is ${otp}`,
-        from: phoneNumber,
-        to: phone,
-      })
-      .then((message) => {
-        // On message successfully sent
-        resolve({ success: true, message: "OTP sent" });
-      })
-      .catch((err) => {
-        // On error
-        reject(err);
+        .create({
+          // message options
+          body: `${otp} ${translate["is your Sindoor confirmation code."]}`,
+          from: phoneNumber,
+          to: `+33${phone.substring(1)}`,
+        })
+        .then((message) => {
+          // On message successfully sent
+          resolve({ success: true, message: translate["OTP sent"] });
+        })
+        .catch((err) => {
+          // On error
+          reject(err);
       });
   });
 };

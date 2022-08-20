@@ -1,6 +1,7 @@
 /**
  * User auth controllers
  * @author Yousuf Kalim
+ * @author Najam Ul Saqib
  */
 const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
@@ -8,6 +9,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
 const { sendOTP } = require("../utils/sendOTP");
+const { translate } = require("../utils/translate");
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
 const tokenSecret = process.env.JWT_SECRET;
 
@@ -19,38 +21,116 @@ const tokenSecret = process.env.JWT_SECRET;
 exports.login = async (req, res) => {
   try {
     // Getting email and password
-    const { email, password, fcmToken } = req.body;
+    const { email, password, fcmToken, data, type } = req.body;
     let role = "User";
+    let user = {};
     // Getting user from db
-    let user = await Users.findOneAndUpdate(
-      { email },
-      { fcmToken },
-      { new: true }
-    );
+    switch (type) {
+      case "apple":
+        user = await Users.findOneAndUpdate(
+          { apple: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { apple: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              apple: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      case "facebook":
+        user = await Users.findOneAndUpdate(
+          { facebook: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { facebook: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              facebook: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      case "google":
+        user = await Users.findOneAndUpdate(
+          { google: data.id },
+          { fcmToken },
+          { new: true }
+        );
+        if (!user) {
+          user = await ServiceProviders.findOneAndUpdate(
+            { google: data.id },
+            { fcmToken },
+            { new: true }
+          );
+          if (!user) {
+            // create login
+            user = await Users.create({
+              ...data,
+              google: data.id,
+              fcmToken,
+              verified: true,
+            });
+          }
+        }
+        break;
+      default:
+        // Login with ID Password
+        user = await Users.findOneAndUpdate(
+          {
+            email,
+            deleted: false,
+          },
+          { fcmToken },
+          { new: true }
+        );
 
-    if (!user) {
-      // If user not found check from service providers
-      role = "ServiceProvider";
-      user = await ServiceProviders.findOneAndUpdate(
-        { email },
-        { fcmToken },
-        { new: true }
-      ); // find user from service provider.
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
-      }
-    }
+        if (!user) {
+          // If user not found check from service providers
+          role = "ServiceProvider";
+          user = await ServiceProviders.findOneAndUpdate(
+            { email },
+            { fcmToken },
+            { new: true }
+          ); // find user from service provider.
+          if (!user) {
+            return res
+              .status(404)
+              .json({ success: false, message: translate["User not found"] });
+          }
+        }
 
-    // Comparing password
-    const isMatched = bcrypt.compareSync(password, user.password);
+        // Comparing password
+        const isMatched = bcrypt.compareSync(password, user.password);
 
-    if (!isMatched) {
-      // If password not matched
-      return res
-        .status(400)
-        .json({ success: false, message: "Invalid Password" });
+        if (!isMatched) {
+          // If password not matched
+          return res
+            .status(400)
+            .json({ success: false, message: translate["Invalid Password"] });
+        }
+        break;
     }
 
     // Creating payload with user object
@@ -66,7 +146,9 @@ exports.login = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -83,7 +165,7 @@ exports.changePassword = async (req, res) => {
     if (newPassword !== confirmPassword) {
       return res.status(400).json({
         success: false,
-        message: "New password and confirm password are not same",
+        message: translate["New password and confirm password are not same"],
       });
     }
 
@@ -94,16 +176,25 @@ exports.changePassword = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
-    const isMatched = bcrypt.compareSync(oldPassword, user.password);
+    let isMatched = bcrypt.compareSync(oldPassword, user.password);
 
     if (!isMatched) {
       return res
         .status(400)
-        .json({ success: false, message: "Incorrect old Password" });
+        .json({ success: false, message: translate["Incorrect old Password"] });
+    }
+
+    isMatched = bcrypt.compareSync(newPassword, user.password);
+
+    if (isMatched) {
+      return res.status(400).json({
+        success: false,
+        message: translate["New Password cannot be same as old Password."],
+      });
     }
 
     // Generate token
@@ -111,11 +202,13 @@ exports.changePassword = async (req, res) => {
 
     await user.save();
 
-    res.json({ success: true, user, message: "Password changed." });
+    res.json({ success: true, user, message: translate["Password changed."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -134,7 +227,7 @@ exports.forgot = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -149,19 +242,25 @@ exports.forgot = async (req, res) => {
         await user.save();
 
         // Done
-        res.json({ success: true, message: "Email sent successfully" });
+        res.json({
+          success: true,
+          message: translate["Email sent successfully"],
+        });
       })
       .catch((err) => {
         // Error handling
         console.log("Error ----> ", err);
-        res
-          .status(500)
-          .json({ success: false, message: "Internal server error" });
+        res.status(500).json({
+          success: false,
+          message: translate["Internal server error"],
+        });
       });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -192,22 +291,26 @@ exports.verifyOTP = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
     if (user.otp !== otp) {
-      return res.status(404).json({ success: false, message: "Invalid OTP" });
+      return res
+        .status(404)
+        .json({ success: false, message: translate["Invalid OTP"] });
     }
 
     user.otp = null;
     user.verified = true;
     user.save();
-    res.json({ success: true, user, message: "Account Verified." });
+    res.json({ success: true, user, message: translate["Account Verified."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -227,7 +330,7 @@ exports.resendOtp = async (req, res) => {
       if (!user) {
         return res
           .status(404)
-          .json({ success: false, message: "User not found" });
+          .json({ success: false, message: translate["User not found"] });
       }
     }
 
@@ -236,25 +339,25 @@ exports.resendOtp = async (req, res) => {
     user.otp = otp; // allot new otp to user
     user.save(); // save user object
 
-    //! uncomment send otp
-    //TODO: Change Phone number format to french before production.
     // Send OTP message to user phone number
-    // sendOTP(user.phone, otp)
-    //   .then(() => {
-    // On success
-    return res.json({
-      success: true,
-      message: "OTP sent",
-      user,
-    }); //Success
-    // })
-    // .catch((err) => {
-    //   // On error
-    //   throw err;
-    // });
+    sendOTP(user.phone, otp)
+      .then(() => {
+        // On success
+        return res.json({
+          success: true,
+          message: translate["OTP sent"],
+          user,
+        }); //Success
+      })
+      .catch((err) => {
+        // On error
+        throw err;
+      });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

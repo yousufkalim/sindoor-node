@@ -79,6 +79,13 @@ const serviceProviderSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    facebook: String,
+    google: String,
+    apple: String,
     otp: String,
     photo: String,
     fcmToken: String,

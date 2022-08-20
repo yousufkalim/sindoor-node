@@ -4,29 +4,40 @@
  */
 const Services = require("../models/Services");
 const ServiceProviders = require("../models/ServiceProviders");
+const { translate } = require("../utils/translate");
 
 //* Get all services of user
 exports.getAllByUserID = async (req, res) => {
   try {
     let { userId } = req.params;
-    let services = await Services.find({ serviceProvider: userId });
+    let services = await Services.find({
+      serviceProvider: userId,
+      deleted: false,
+    });
     res.json({ success: true, services });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
 exports.getFewByUserId = async (req, res) => {
   try {
     let { userId } = req.params;
-    let services = await Services.find({ serviceProvider: userId }).limit(5);
+    let services = await Services.find({
+      serviceProvider: userId,
+      deleted: false,
+    }).limit(5);
     res.json({ success: true, services });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -36,9 +47,10 @@ exports.createService = async (req, res) => {
     let { userId } = req.params;
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
-      return res
-        .status(404)
-        .json({ success: false, message: "No Service Provider found." });
+      return res.status(404).json({
+        success: false,
+        message: translate["No Service Provider found."],
+      });
     }
     // store fille path into array
     let photos = [];
@@ -56,12 +68,18 @@ exports.createService = async (req, res) => {
       serviceProvider.services.push({ service: service._id });
       serviceProvider.save();
 
-      return res.json({ success: true, service, message: "Service created." });
+      return res.json({
+        success: true,
+        service,
+        message: translate["Service created."],
+      });
     });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -87,12 +105,14 @@ exports.editService = async (req, res) => {
     }
 
     await Services.findByIdAndUpdate(serviceId, req.body).then(() => {
-      res.json({ success: true, message: "Service Updated." });
+      res.json({ success: true, message: translate["Service Updated."] });
     });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -100,25 +120,29 @@ exports.editService = async (req, res) => {
 exports.deleteService = async (req, res) => {
   try {
     let { serviceId } = req.params;
-    await Services.findByIdAndDelete(serviceId).then(async (resp) => {
-      await ServiceProviders.findOneAndUpdate(
-        {
-          _id: resp.serviceProvider,
-        },
-        {
-          $pull: {
-            services: {
-              service: serviceId,
-            },
+    await Services.findByIdAndUpdate(serviceId, { deleted: true }).then(
+      async (resp) => {
+        await ServiceProviders.findOneAndUpdate(
+          {
+            _id: resp.serviceProvider,
           },
-        }
-      );
-    });
-    res.json({ success: true, message: "Service deleted." });
+          {
+            $pull: {
+              services: {
+                service: serviceId,
+              },
+            },
+          }
+        );
+      }
+    );
+    res.json({ success: true, message: translate["Service deleted."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -134,7 +158,9 @@ exports.getById = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -142,20 +168,29 @@ exports.getRandomServiceProviders = async (req, res) => {
   try {
     let { category, page } = req.query;
     if (!page) page = 0;
-    if (!category) {
-      return res.json({ success: false, message: "Category is required." });
-    }
+    const limit = 20;
+    // if (!category) {
+    //   return res.json({
+    //     success: false,
+    //     message: translate["Category is required."],
+    //   });
+    // }
 
-    let services = await Services.find({ category }).populate(
-      "serviceProvider",
-      "_id company_name location description"
-    );
+    let services = await Services.find({ category, deleted: false })
+      .skip(page * limit)
+      .limit(limit)
+      .populate(
+        "serviceProvider",
+        "_id company_name location description photo"
+      );
     services.sort(() => Math.random() - 0.5);
 
     res.json({ success: true, services, page });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

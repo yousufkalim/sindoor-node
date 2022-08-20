@@ -18,18 +18,15 @@ const userSchema = new mongoose.Schema(
     },
     email: {
       type: String,
-      required: true,
       unique: true,
       lowercase: true,
     },
     password: {
       type: String,
-      required: true,
       minlength: 8,
     },
     phone: {
       type: String,
-      required: true,
     },
     verified: {
       type: Boolean,
@@ -37,7 +34,7 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["male", "female"],
+      enum: ["male", "female", "others"],
     },
     otp: String,
     photo: String,
@@ -60,6 +57,13 @@ const userSchema = new mongoose.Schema(
         role: String,
       },
     ],
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
+    facebook: String,
+    google: String,
+    apple: String,
     favorites: [],
     online: {
       type: Boolean,

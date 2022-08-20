@@ -1,6 +1,7 @@
 const Chats = require("../models/Chats");
 const Users = require("../models/Users");
 const ServiceProviders = require("../models/ServiceProviders");
+const { translate } = require("../utils/translate");
 
 exports.getChatData = async (req, res) => {
   try {
@@ -85,12 +86,14 @@ exports.getChatData = async (req, res) => {
         return res.json({ chat });
       }
     } else {
-      return res.json({ message: "Params required" });
+      return res.json({ message: translate["Params required"] });
     }
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -119,10 +122,12 @@ exports.getAllChats = async (req, res) => {
         "first_name last_name photo company_name online"
       );
 
-    res.json({ chats });
+    res.json({ success: true, chats });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

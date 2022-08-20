@@ -8,6 +8,7 @@ const Bookings = require("../models/Bookings");
 const Wishlists = require("../models/Wishlists");
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const { getCommission } = require("../utils/getCommission");
+const { translate } = require("../utils/translate");
 
 exports.SendRequest = async (req, res) => {
   try {
@@ -27,13 +28,15 @@ exports.SendRequest = async (req, res) => {
 
     res.json({
       success: true,
-      message: "Request sent to Service Provider.",
+      message: translate["Request sent to Service Provider."],
       booking,
     });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -54,7 +57,9 @@ exports.getRequests = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -75,7 +80,9 @@ exports.getBookings = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -97,7 +104,9 @@ exports.getFewBookings = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -115,7 +124,9 @@ exports.getRequestsByEventId = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -130,7 +141,9 @@ exports.getById = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -141,7 +154,7 @@ exports.acceptRequest = async (req, res) => {
     if (+deposit_price > +final_price) {
       return res.status(400).json({
         success: false,
-        message: "Deposit price must be lower than final price.",
+        message: translate["Deposit price must be lower than final price."],
       });
     }
     await Bookings.findByIdAndUpdate(requestId, {
@@ -150,11 +163,13 @@ exports.acceptRequest = async (req, res) => {
       status: "accepted",
     });
 
-    res.json({ message: "Price / Status Updated." });
+    res.json({ message: translate["Price / Status Updated."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -164,11 +179,13 @@ exports.rejectRequest = async (req, res) => {
 
     await Bookings.findByIdAndUpdate(requestId, { status: "rejected" });
 
-    res.json({ message: "Request rejected." });
+    res.json({ message: translate["Request rejected."] });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -208,7 +225,9 @@ exports.checkOut = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };
 
@@ -296,6 +315,8 @@ exports.canRateInfo = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
   }
 };

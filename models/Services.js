@@ -29,12 +29,16 @@ const serviceSchema = new mongoose.Schema(
       lng: Number,
     },
     price: {
-      type: String,
+      type: Number,
       required: true,
     },
-    fixed_amount: String,
-    deposit: {
+    type: {
       type: String,
+      enum: ["fixed", "estimated"],
+      default: "fixed",
+    },
+    deposit: {
+      type: Number,
       required: true,
     },
     category: {
@@ -42,6 +46,10 @@ const serviceSchema = new mongoose.Schema(
       require: true,
     },
     phone: String,
+    deleted: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

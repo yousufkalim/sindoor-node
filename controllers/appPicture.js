@@ -12,8 +12,18 @@ const Pictures = require('../models/AppPicture');
 exports.create = async (req, res) => {
   try {
     // Getting url of the image
-    if (req.file) {
-      req.body.photo = req.file.path; // Creating a new property called photo in body object
+
+    req.body.active = JSON.parse(req.body.active);
+    if (req.body.active) {
+      await Pictures.findOneAndUpdate({ active: true }, { active: false }, { new: true });
+    }
+    if (req.files) {
+      req?.files?.eventImage?.map((e) => {
+        req.body.eventImage = e.path;
+      });
+      req?.files?.codeImage?.map((e) => {
+        req.body.codeImage = e.path;
+      });
     }
     const picture = await Pictures.create(req.body);
     res.json({ success: true, picture }); // Success
@@ -41,13 +51,13 @@ exports.getAll = async (req, res) => {
 };
 
 /**
- * Get Two Active
+ * Get  Active
  * @param {object} req
  * @param {object} res
  */
-exports.getTwo = async (req, res) => {
+exports.getActive = async (req, res) => {
   try {
-    const pictures = await Pictures.find({ active: true }).limit(2); // Finding all the pictures from db
+    const pictures = await Pictures.find({ active: true }); // Finding all the pictures from db
     res.json({ success: true, pictures }); // Success
   } catch (err) {
     // Error handling
@@ -81,14 +91,21 @@ exports.getById = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { pictureId } = req.params; // Getting picture id from URL parameter
-
-    // Getting url of the image
-    if (req.file) {
-      req.body.photo = req.file.path; // Creating a new property called photo in body object
+    req.body.active = JSON.parse(req.body.active);
+    if (req.body.active) {
+      await Pictures.findOneAndUpdate({ active: true }, { active: false }, { new: true });
+    }
+    if (req.files) {
+      req?.files?.eventImage?.map((e) => {
+        req.body.eventImage = e.path;
+      });
+      req?.files?.codeImage?.map((e) => {
+        req.body.codeImage = e.path;
+      });
     }
 
     const picture = await Pictures.findByIdAndUpdate(pictureId, req.body, { new: true }); // Updating the user
-    res.json({ success: true, message: 'User updated successfully', picture }); // Success
+    res.json({ success: true, message: 'Pictures updated successfully', picture }); // Success
   } catch (err) {
     // Error handling
     console.log('Error ----> ', err);
@@ -104,7 +121,11 @@ exports.update = async (req, res) => {
 exports.delete = async (req, res) => {
   try {
     const { pictureId } = req.params; // Getting user id from URL parameter
-    const picture = await Pictures.findByIdAndDelete(pictureId); // Deleting the user
+    let picture = await Pictures.findById(pictureId); // Deleting the user
+    if (picture.active) {
+      await Pictures.findOneAndUpdate({ active: false }, { active: true }, { new: true });
+    }
+    picture = await Pictures.findByIdAndDelete(pictureId); // Deleting the user
     res.json({ success: true, picture }); // Success
   } catch (err) {
     // Error handling

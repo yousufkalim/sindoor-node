@@ -7,7 +7,11 @@ const mongoose = require('mongoose');
 //Schema
 const AppPictureSchema = new mongoose.Schema(
   {
-    photo: {
+    codeImage: {
+      type: String,
+      required: true,
+    },
+    eventImage: {
       type: String,
       required: true,
     },

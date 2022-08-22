@@ -4,7 +4,7 @@
  */
 const router = require('express').Router();
 const picture = require('../controllers/appPicture');
-const { upload } = require('../middleware/multer');
+const { upload, appPicturesUpload } = require('../middleware/multer');
 
 const { checkAdminAuth } = require('../middleware/adminAuth');
 
@@ -18,13 +18,13 @@ const { checkAdminAuth } = require('../middleware/adminAuth');
  */
 
 // Create - Picture
-router.post('/', checkAdminAuth, upload.single('image'), picture.create);
+router.post('/', checkAdminAuth, appPicturesUpload, picture.create);
 // Read
 router.get('/', checkAdminAuth, picture.getAll); // Get all picture at once
-router.get('/getTwo', checkAdminAuth, picture.getTwo); // Get all picture at once
+router.get('/getActive', picture.getActive); // Get all picture at once
 router.get('/:pictureId', checkAdminAuth, picture.getById); // Get one picture by it's id
 // Update
-router.put('/:pictureId', checkAdminAuth, upload.single('image'), picture.update); // Update a specific picture by it's id
+router.put('/:pictureId', checkAdminAuth, appPicturesUpload, picture.update); // Update a specific picture by it's id
 // Delete
 router.delete('/:pictureId', checkAdminAuth, picture.delete); // delete a specific picture by it's id
 

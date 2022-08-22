@@ -54,14 +54,19 @@ exports.createService = async (req, res) => {
     }
     // store fille path into array
     let photos = [];
-    if (req.files) {
-      req.files.forEach((image) => {
+    if (req.files.photos) {
+      req.files.photos.forEach((image) => {
         photos.push(image.path);
       });
+    }
+    let video = "";
+    if (req.files.video) {
+      video = req.files.video[0].path;
     }
 
     req.body.serviceProvider = userId;
     req.body.photos = photos;
+    req.body.video = video;
     req.body.location = JSON.parse(req.body.location);
 
     await Services.create(req.body).then((service) => {
@@ -93,15 +98,20 @@ exports.editService = async (req, res) => {
     }
     // check if request have images
     let photos = [];
-    if (req.files) {
-      req.files.forEach((image) => {
+    if (req.files.photos) {
+      req.files.photos.forEach((image) => {
         photos.push(image.path);
       });
     }
+
     if (body.photos) {
       body.photos = [...JSON.parse(body.photos), ...photos];
     } else {
       body.photos = photos;
+    }
+
+    if (req.files.video) {
+      req.body.video = req.files.video[0].path;
     }
 
     await Services.findByIdAndUpdate(serviceId, req.body).then(() => {
@@ -169,12 +179,6 @@ exports.getRandomServiceProviders = async (req, res) => {
     let { category, page } = req.query;
     if (!page) page = 0;
     const limit = 20;
-    // if (!category) {
-    //   return res.json({
-    //     success: false,
-    //     message: translate["Category is required."],
-    //   });
-    // }
 
     let services = await Services.find({ category, deleted: false })
       .skip(page * limit)

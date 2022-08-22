@@ -20,6 +20,7 @@ const serviceSchema = new mongoose.Schema(
       required: true,
     },
     photos: [],
+    video: String,
     location: {
       label: String,
       label2: String,

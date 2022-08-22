@@ -9,7 +9,16 @@ const { upload } = require("../middleware/multer");
 
 router.post(
   "/:userId",
-  upload.array("photos"),
+  upload.fields([
+    {
+      name: "video",
+      maxCount: 1,
+    },
+    {
+      name: "photos",
+      maxCount: 5,
+    },
+  ]),
   validateService,
   isValidated,
   services.createService
@@ -17,7 +26,16 @@ router.post(
 
 router.put(
   "/:serviceId",
-  upload.array("photos"),
+  upload.fields([
+    {
+      name: "video",
+      maxCount: 1,
+    },
+    {
+      name: "photos",
+      maxCount: 5,
+    },
+  ]),
   validateService,
   isValidated,
   services.editService

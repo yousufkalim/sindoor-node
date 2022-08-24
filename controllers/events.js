@@ -649,13 +649,22 @@ exports.getPicturesNeedApproval = async (req, res) => {
 exports.getApprovedPictures = async (req, res) => {
   try {
     let { eventId } = req.params;
+    let { user } = req.query;
     let pictures = await Pictures.find({
-      event: eventId,
-      status: "approved",
+      $or: [
+        {
+          event: eventId,
+          status: "approved",
+        },
+        {
+          event: eventId,
+          from: user,
+        },
+      ],
     })
       .populate("from", "first_name last_name photo")
       .sort({ createdAt: -1 });
-    res.json({ pictures });
+    res.json({ pictures, user });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

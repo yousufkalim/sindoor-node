@@ -3,7 +3,6 @@
  * @author Yousuf Kalim
  */
 const router = require("express").Router();
-const { sendPushMessage } = require("../utils/sendFcmNotification");
 
 // Parent Routes
 router.use("/admins", require("./admins")); // All the admins routes
@@ -16,6 +15,7 @@ router.use("/services", require("./services")); // All the services routes
 router.use("/chat", require("./chat")); // All the chat routes
 router.use("/bookings", require("./bookings")); // All the booking routes
 router.use("/notifications", require("./notifications")); // All the notification routes
+router.use("/video", require("./videos")); // video pipeline
 
 // Export
 module.exports = router;

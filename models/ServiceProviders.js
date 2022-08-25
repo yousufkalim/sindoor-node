@@ -83,6 +83,10 @@ const serviceProviderSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    notification: {
+      type: Boolean,
+      default: true,
+    },
     facebook: String,
     google: String,
     apple: String,

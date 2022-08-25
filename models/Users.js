@@ -48,6 +48,10 @@ const userSchema = new mongoose.Schema(
       front: String,
       back: String,
     },
+    notification: {
+      type: Boolean,
+      default: true
+    },
     events: [
       {
         event: {

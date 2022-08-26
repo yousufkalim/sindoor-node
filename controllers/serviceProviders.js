@@ -424,3 +424,20 @@ exports.EditBank = async (req, res) => {
       .json({ success: false, message: translate["Internal server error"] });
   }
 };
+
+exports.turnOffNotifications = async (req, res) => {
+  try {
+    let { userId } = req.params;
+    const user = await ServiceProviders.findById(userId);
+
+    user.notification = !user.notification;
+    user.save();
+    res.json({ success: true, notification: user.notification });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
+  }
+};

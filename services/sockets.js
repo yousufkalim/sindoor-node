@@ -99,7 +99,7 @@ module.exports = (io) => {
       if (!user) {
         user = await ServiceProviders.findById(data.receiver);
       }
-      if (user.fcmToken) {
+      if (user.fcmToken && user.notification) {
         sendFcmNotification(
           user.fcmToken,
           data.sender.name,

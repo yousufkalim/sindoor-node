@@ -346,9 +346,13 @@ exports.addBank = async (req, res) => {
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    res.status(500).json({
+      success: false,
+      message:
+        err.raw.message ??
+        stripeErrors[err.param.replace("]", "").split("[")[1]] ??
+        translate["Internal server error"],
+    });
   }
 };
 

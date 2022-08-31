@@ -42,13 +42,12 @@ router.put(
 ); //* update service
 
 router.delete("/:serviceId", services.deleteService); //* delete service
-
 router.get("/:serviceId", services.getById); //* Get service by id
 
 router.get("/:userId/all", services.getAllByUserID); //* get all services of user
 router.get("/:userId/few", services.getFewByUserId); //* get few services of user
 
-router.get("/", services.getRandomServiceProviders); //* Get random service providers by services
+router.get("/", services.getFilteredServices); //* Get services
 
 // Export
 module.exports = router;

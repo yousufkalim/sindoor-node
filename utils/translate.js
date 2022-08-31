@@ -2,7 +2,7 @@ exports.translate = {
   "First name is required.": "Le prénom est requis.",
   "Last name is required.": "Le nom de famille est requis.",
   "Email is required.": "Un e-mail est requis.",
-  "Invalid Email.": "Email invalide.",
+  "Invalid Email.": "E-mail invalide.",
   "Phone number is required.": "Le numéro de téléphone est requis.",
   "Invalid phone number format": "Format de numéro de téléphone invalide",
   "Phone number can only be numeric":

@@ -87,6 +87,10 @@ const serviceProviderSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    rating: {
+      type: Number,
+      default: 0,
+    },
     facebook: String,
     google: String,
     apple: String,

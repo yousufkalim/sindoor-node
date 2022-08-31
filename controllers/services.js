@@ -5,6 +5,7 @@
 const Services = require("../models/Services");
 const ServiceProviders = require("../models/ServiceProviders");
 const { translate } = require("../utils/translate");
+const { findDistance } = require("../utils/findDistance");
 
 //* Get all services of user
 exports.getAllByUserID = async (req, res) => {
@@ -174,7 +175,7 @@ exports.getById = async (req, res) => {
   }
 };
 
-exports.getRandomServiceProviders = async (req, res) => {
+exports.getRandomServices = async (req, res) => {
   try {
     let { category, page } = req.query;
     if (!page) page = 0;
@@ -190,6 +191,85 @@ exports.getRandomServiceProviders = async (req, res) => {
     services.sort(() => Math.random() - 0.5);
 
     res.json({ success: true, services, page });
+  } catch (err) {
+    // Error handling
+    console.log("Error ----> ", err);
+    res
+      .status(500)
+      .json({ success: false, message: translate["Internal server error"] });
+  }
+};
+
+exports.getFilteredServices = async (req, res) => {
+  try {
+    let { radius, rating, lat, lng, category, page } = req.query;
+
+    if (!page) page = 0;
+    const limit = 20;
+    let pipeline = [];
+
+    pipeline.push({
+      $lookup: {
+        from: "services",
+        localField: "services.service",
+        foreignField: "_id",
+        as: "services",
+      },
+    });
+
+    pipeline.push({
+      $unwind: {
+        path: "$services",
+      },
+    });
+
+    pipeline.push(
+      category // check if category variable exists
+        ? {
+            $match: {
+              rating: {
+                $gte: rating ? +rating : 0,
+              },
+              "services.deleted": false,
+              "services.category": category,
+            },
+          }
+        : {
+            $match: {
+              rating: {
+                $gte: rating ? +rating : 0,
+              },
+              "services.deleted": false,
+            },
+          }
+    );
+
+    pipeline.push({
+      $replaceRoot: {
+        newRoot: {
+          $mergeObjects: ["$services"],
+        },
+      },
+    });
+
+    const services = await ServiceProviders.aggregate(pipeline)
+      .skip(page * limit)
+      .limit(limit); // find services from service provider modal
+
+    let results = await findDistance(lat, lng, radius, services); // get distance
+
+    let populated_results = await ServiceProviders.populate(results, {
+      path: "serviceProvider",
+      select: "_id company_name location description photo rating",
+    }); // populate data
+
+    populated_results.sort(() => Math.random() - 0.5); // randomize services.
+
+    res.json({
+      success: true,
+      services: populated_results,
+      page,
+    });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);

@@ -120,17 +120,9 @@ exports.getById = async (req, res) => {
       });
     }
 
-    let ratingsSum = serviceProvider.ratings.reduce(
-      (prev, cnt) => prev + cnt.rating,
-      0
-    );
-    let rating = (ratingsSum / (serviceProvider.ratings.length || 1)).toFixed(
-      1
-    );
-
     res.json({
       success: true,
-      user: { ...serviceProvider._doc, rating },
+      user: serviceProvider,
     });
   } catch (err) {
     // Error handling
@@ -295,22 +287,49 @@ exports.rateUser = async (req, res) => {
       "ratings.user": req.body.user,
     });
     if (alreadyRated) {
-      let alreadyRated = await ServiceProviders.findOneAndUpdate(
+      alreadyRated = await ServiceProviders.findOneAndUpdate(
         {
           _id: userId,
           "ratings.user": req.body.user,
         },
         {
           $set: { "ratings.$": req.body },
+        },
+        {
+          new: true,
         }
       );
 
-      return res.json({ success: true, message: translate["Rating Updated"] });
+      let ratingsSum = alreadyRated.ratings.reduce(
+        (prev, cnt) => prev + cnt.rating,
+        0
+      );
+      let rating = (ratingsSum / (alreadyRated.ratings.length || 1)).toFixed(1);
+
+      alreadyRated.rating = rating;
+      alreadyRated.save();
+
+      return res.json({
+        success: true,
+        message: translate["Rating Updated"],
+      });
     } else {
       let serviceProvider = await ServiceProviders.findById(userId);
       serviceProvider.ratings.push(req.body);
+
+      let ratingsSum = alreadyRated.ratings.reduce(
+        (prev, cnt) => prev + cnt.rating,
+        0
+      );
+      let rating = (ratingsSum / (alreadyRated.ratings.length || 1)).toFixed(1);
+
+      serviceProvider.rating = rating;
+
       serviceProvider.save();
-      res.json({ success: true, message: translate["Thank You for rating"] });
+      res.json({
+        success: true,
+        message: translate["Thank You for rating"],
+      });
     }
   } catch (err) {
     // Error handling

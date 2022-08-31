@@ -2,7 +2,7 @@
  * App Pictures CRUD controllers
  * @author Shuja Naqvi
  */
-const Pictures = require('../models/AppPicture');
+const Pictures = require("../models/AppPicture");
 
 /**
  * Create User - Signup
@@ -15,7 +15,11 @@ exports.create = async (req, res) => {
 
     req.body.active = JSON.parse(req.body.active);
     if (req.body.active) {
-      await Pictures.findOneAndUpdate({ active: true }, { active: false }, { new: true });
+      await Pictures.findOneAndUpdate(
+        { active: true },
+        { active: false },
+        { new: true }
+      );
     }
     if (req.files) {
       req?.files?.eventImage?.map((e) => {
@@ -29,8 +33,8 @@ exports.create = async (req, res) => {
     res.json({ success: true, picture }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -45,8 +49,8 @@ exports.getAll = async (req, res) => {
     res.json({ success: true, pictures }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -57,12 +61,12 @@ exports.getAll = async (req, res) => {
  */
 exports.getActive = async (req, res) => {
   try {
-    const pictures = await Pictures.find({ active: true }); // Finding all the pictures from db
+    const pictures = await Pictures.findOne({ active: true }); // Finding all the pictures from db
     res.json({ success: true, pictures }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -78,8 +82,8 @@ exports.getById = async (req, res) => {
     res.json({ success: true, picture }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -93,7 +97,11 @@ exports.update = async (req, res) => {
     const { pictureId } = req.params; // Getting picture id from URL parameter
     req.body.active = JSON.parse(req.body.active);
     if (req.body.active) {
-      await Pictures.findOneAndUpdate({ active: true }, { active: false }, { new: true });
+      await Pictures.findOneAndUpdate(
+        { active: true },
+        { active: false },
+        { new: true }
+      );
     }
     if (req.files) {
       req?.files?.eventImage?.map((e) => {
@@ -104,12 +112,18 @@ exports.update = async (req, res) => {
       });
     }
 
-    const picture = await Pictures.findByIdAndUpdate(pictureId, req.body, { new: true }); // Updating the user
-    res.json({ success: true, message: 'Pictures updated successfully', picture }); // Success
+    const picture = await Pictures.findByIdAndUpdate(pictureId, req.body, {
+      new: true,
+    }); // Updating the user
+    res.json({
+      success: true,
+      message: "Pictures updated successfully",
+      picture,
+    }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
 
@@ -123,13 +137,17 @@ exports.delete = async (req, res) => {
     const { pictureId } = req.params; // Getting user id from URL parameter
     let picture = await Pictures.findById(pictureId); // Deleting the user
     if (picture.active) {
-      await Pictures.findOneAndUpdate({ active: false }, { active: true }, { new: true });
+      await Pictures.findOneAndUpdate(
+        { active: false },
+        { active: true },
+        { new: true }
+      );
     }
     picture = await Pictures.findByIdAndDelete(pictureId); // Deleting the user
     res.json({ success: true, picture }); // Success
   } catch (err) {
     // Error handling
-    console.log('Error ----> ', err);
-    res.status(500).json({ success: false, message: 'Internal server error' });
+    console.log("Error ----> ", err);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };

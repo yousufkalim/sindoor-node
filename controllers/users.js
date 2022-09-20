@@ -46,27 +46,48 @@ exports.create = async (req, res) => {
     let otp = Math.random().toFixed(4).slice(-4);
     req.body.otp = otp;
 
-    // Adding user in db
-    await Users.create(req.body).then((user) => {
-      // Sending otp to user
-      sendOTP(phone, otp)
-        .then(() => {
-          res.json({
-            success: true,
-            message: translate["Account created and otp sent"],
-            user,
-          }); //Success
-        })
-        .catch((err) => {
-          throw err;
-        });
-    });
+    let user = new Users(req.body);
+    let otpResp = await sendOTP(phone, otp);
+
+    if (otpResp.err) {
+      return res.status(400).json({
+        success: false,
+        message: translate["Invalid Phone number"],
+      });
+    }
+
+    user.save(); // save user object
+    res.json({
+      success: true,
+      message: translate["Account created and otp sent"],
+      user,
+    }); //Success
+
+    // // Adding user in db
+    // await Users.create(req.body).then((user) => {
+    //   // Sending otp to user
+    //   sendOTP(phone, otp)
+    //     .then(() => {
+    //       res.json({
+    //         success: true,
+    //         message: translate["Account created and otp sent"],
+    //         user,
+    //       }); //Success
+    //     })
+    //     .catch((err) => {
+    //       throw err;
+    //     });
+    // });
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    res.status(500).json({
+      success: false,
+      message:
+        err.code === 21614
+          ? translate["Invalid Phone number"]
+          : translate["Internal server error"],
+    });
   }
 };
 

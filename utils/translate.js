@@ -132,4 +132,5 @@ exports.translate = {
   "Event deleted.": "Événement supprimé.",
   "Message is required": "Un message est requis",
   "Price Type is require.": "Le type de prix est requis.",
+  "Invalid Phone number": "Numéro de téléphone invalide",
 };

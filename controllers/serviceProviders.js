@@ -53,22 +53,46 @@ exports.create = async (req, res) => {
     });
     req.body.culture = cultureArr;
 
-    // Adding user in db
-    await ServiceProviders.create(req.body).then((user) => {
-      // Sending otp to user
-      sendOTP(phone, otp);
-      res.json({
-        success: true,
-        message: translate["Account created and otp sent"],
-        user,
-      }); //Success
-    });
+    let user = new ServiceProviders(req.body);
+
+    let otpResp = await sendOTP(phone, otp);
+
+    if (otpResp.err) {
+      return res.status(400).json({
+        success: false,
+        message: translate["Invalid Phone number"],
+      });
+    }
+
+    user.save(); // save user object
+    res.json({
+      success: true,
+      message: translate["Account created and otp sent"],
+      user,
+    }); //Success
+
+    // // Adding user in db
+    // await ServiceProviders.create(req.body).then((user) => {
+    //   // Sending otp to user
+    //   sendOTP(phone, otp);
+    //   res.json({
+    //     success: true,
+    //     message: translate["Account created and otp sent"],
+    //     user,
+    //   }); //Success
+    // });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
+    console.log("Error ----> ", err.message);
     res
       .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+      .json({
+        success: false,
+        message:
+          err.code === 21614
+            ? translate["Invalid Phone number"]
+            : translate["Internal server error"],
+      });
   }
 };
 

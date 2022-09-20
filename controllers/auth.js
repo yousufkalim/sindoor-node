@@ -338,27 +338,42 @@ exports.resendOtp = async (req, res) => {
     let otp = Math.random().toFixed(4).slice(-4); // Generate random otp
 
     user.otp = otp; // allot new otp to user
-    user.save(); // save user object
 
     // Send OTP message to user phone number
-    sendOTP(user.phone, otp)
-      .then(() => {
-        // On success
-        return res.json({
-          success: true,
-          message: translate["OTP sent"],
-          user,
-        }); //Success
-      })
-      .catch((err) => {
-        // On error
-        throw err;
+    let otpResp = await sendOTP(user.phone, otp);
+    // .then(() => {
+    //   // On success
+    //   return res.json({
+    //     success: true,
+    //     message: translate["OTP sent"],
+    //     user,
+    //   }); //Success
+    // })
+    // .catch((err) => {
+    //   // On error
+    //   throw err;
+    // });
+    if (otpResp.err) {
+      return res.status(400).json({
+        success: false,
+        message: translate["Invalid Phone number"],
       });
+    }
+    user.save(); // save user object
+    res.json({
+      success: true,
+      message: translate["OTP sent"],
+      user,
+    }); //Success
   } catch (err) {
     // Error handling
     console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    res.status(500).json({
+      success: false,
+      message:
+        err.code === 21614
+          ? translate["Invalid Phone number"]
+          : translate["Internal server error"],
+    });
   }
 };

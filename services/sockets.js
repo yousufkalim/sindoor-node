@@ -3,21 +3,21 @@
  * @author Najam Ul Saqib
  */
 
-const Users = require("../models/Users");
-const ServiceProviders = require("../models/ServiceProviders");
-const Chats = require("../models/Chats");
-const Notifications = require("../models/Notifications");
-const { sendFcmNotification } = require("../utils/sendFcmNotification");
+const Users = require('../models/Users');
+const ServiceProviders = require('../models/ServiceProviders');
+const Chats = require('../models/Chats');
+const Notifications = require('../models/Notifications');
+const { sendFcmNotification } = require('../utils/sendFcmNotification');
 
-module.exports = (io) => {
+module.exports = io => {
   // Socket
-  io.on("connection", (socket) => {
-    console.log("User connected to socket ;)");
+  io.on('connection', socket => {
+    console.log('User connected to socket ;)');
     //
-    socket.on("message", async (data) => {
+    socket.on('message', async data => {
       const { chatId, message, to } = data;
       socket.broadcast.emit(`listener${to}`, message);
-      io.sockets.emit(`message${chatId}`, { ...message, seen: "sent" });
+      io.sockets.emit(`message${chatId}`, { ...message, seen: 'sent' });
       let chat = await Chats.findById(chatId);
       if (chat) {
         chat.messages.push(message);
@@ -27,34 +27,34 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("seen", async (data) => {
+    socket.on('seen', async data => {
       socket.broadcast.emit(`seen${data.userId}`, { userId: data.userId });
       await Chats.findOneAndUpdate(
         {
-          _id: data.chatId,
+          _id: data.chatId
         },
         {
           $set: {
-            "messages.$[msg].seen": "seen",
-          },
+            'messages.$[msg].seen': 'seen'
+          }
         },
         {
           arrayFilters: [
             {
-              "msg.from": {
-                $ne: data.userId,
-              },
-            },
-          ],
+              'msg.from': {
+                $ne: data.userId
+              }
+            }
+          ]
         }
       );
     });
 
-    socket.on("online", async (data) => {
+    socket.on('online', async data => {
       //change user status to online
       // send Online socket to user
       socket.broadcast.emit(`status${data.userId}`, {
-        online: true,
+        online: true
       });
       // change online status in db.
       let user = await Users.findById(data.userId);
@@ -72,11 +72,11 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("offline", async (data) => {
+    socket.on('offline', async data => {
       // change user status to offline
       // send Online socket to user
       socket.broadcast.emit(`status${data.userId}`, {
-        online: false,
+        online: false
       });
       // change online status in db.
       let user = await Users.findById(data.userId);
@@ -94,21 +94,17 @@ module.exports = (io) => {
       }
     });
 
-    socket.on("notification", async (data) => {
+    socket.on('notification', async data => {
       let user = await Users.findById(data.receiver);
       if (!user) {
         user = await ServiceProviders.findById(data.receiver);
       }
-      if (user.fcmToken && user.notification) {
-        sendFcmNotification(
-          user.fcmToken,
-          data.sender.name,
-          `${data.sender.name} ${data.text}`
-        );
+      if (user.fcmToken && !!user.notification) {
+        sendFcmNotification(user.fcmToken, data.sender.name, `${data.sender.name} ${data.text}`);
       }
       socket.broadcast.emit(`notification${data.receiver}`, {
         ...data,
-        read: false,
+        read: false
       });
       await Notifications.create(data);
     });

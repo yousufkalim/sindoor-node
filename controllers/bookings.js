@@ -3,20 +3,18 @@
  * @author Najam Ul Saqib
  */
 
-const moment = require("moment");
-const Bookings = require("../models/Bookings");
-const Wishlists = require("../models/Wishlists");
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { getCommission } = require("../utils/getCommission");
-const { translate } = require("../utils/translate");
+const moment = require('moment');
+const Bookings = require('../models/Bookings');
+const Wishlists = require('../models/Wishlists');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { getCommission } = require('../utils/getCommission');
+const { translate } = require('../utils/translate');
+const { sendMessage } = require('../utils/sendOTP');
 
 exports.SendRequest = async (req, res) => {
   try {
     let { body } = req;
-    let duration = moment(body.end_date).diff(
-      moment(body.start_date),
-      "minute"
-    );
+    let duration = moment(body.end_date).diff(moment(body.start_date), 'minute');
 
     duration = (duration / 60).toFixed(1);
 
@@ -28,15 +26,13 @@ exports.SendRequest = async (req, res) => {
 
     res.json({
       success: true,
-      message: translate["Request sent to Service Provider."],
-      booking,
+      message: translate['Request sent to Service Provider.'],
+      booking
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -45,21 +41,16 @@ exports.getRequests = async (req, res) => {
     let { userId } = req.params;
     let requests = await Bookings.find({
       serviceProvider: userId,
-      paid: "nill",
-      status: { $in: ["accepted", "pending"] },
+      paid: 'nill',
+      status: { $in: ['accepted', 'pending'] }
     })
-      .sort("-createdAt")
-      .populate(
-        "service user event",
-        "name first_name last_name location type photo description"
-      );
+      .sort('-createdAt')
+      .populate('service user event', 'name first_name last_name location type photo description');
     res.json({ success: true, requests });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -68,21 +59,16 @@ exports.getBookings = async (req, res) => {
     let { userId } = req.params;
     let requests = await Bookings.find({
       serviceProvider: userId,
-      status: "accepted",
-      paid: { $in: ["deposit", "paid"] },
+      status: 'accepted',
+      paid: { $in: ['deposit', 'paid'] }
     })
-      .sort("start_date")
-      .populate(
-        "service user event",
-        "name first_name last_name location type photo description"
-      );
+      .sort('start_date')
+      .populate('service user event', 'name first_name last_name location type photo description');
     res.json({ success: true, requests });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -91,22 +77,17 @@ exports.getFewBookings = async (req, res) => {
     let { userId } = req.params;
     let requests = await Bookings.find({
       serviceProvider: userId,
-      status: "accepted",
-      paid: { $in: ["deposit", "paid"] },
+      status: 'accepted',
+      paid: { $in: ['deposit', 'paid'] }
     })
-      .sort("start_date")
+      .sort('start_date')
       .limit(5)
-      .populate(
-        "service user event",
-        "name first_name last_name location type photo description"
-      );
+      .populate('service user event', 'name first_name last_name location type photo description');
     res.json({ success: true, requests });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -115,18 +96,16 @@ exports.getRequestsByEventId = async (req, res) => {
     let { eventId } = req.params;
     let bookings = await Bookings.find({
       event: eventId,
-      status: { $in: ["accepted", "pending"] },
+      status: { $in: ['accepted', 'pending'] }
     }).populate(
-      "service user event serviceProvider",
-      "name first_name last_name location type photo company_name bank"
+      'service user event serviceProvider',
+      'name first_name last_name location type photo company_name bank'
     );
     res.json({ success: true, bookings });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -134,16 +113,14 @@ exports.getById = async (req, res) => {
   try {
     let { bookingId } = req.params;
     let booking = await Bookings.findById(bookingId).populate(
-      "service user event serviceProvider",
-      "name first_name last_name location type photo company_name bank"
+      'service user event serviceProvider',
+      'name first_name last_name location type photo company_name bank'
     );
     res.json({ success: true, booking });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -154,22 +131,20 @@ exports.acceptRequest = async (req, res) => {
     if (+deposit_price > +final_price) {
       return res.status(400).json({
         success: false,
-        message: translate["Deposit price must be lower than final price."],
+        message: translate['Deposit price must be lower than final price.']
       });
     }
     await Bookings.findByIdAndUpdate(requestId, {
       final_price,
       deposit_price,
-      status: "accepted",
+      status: 'accepted'
     });
 
-    res.json({ message: translate["Price / Status Updated."] });
+    res.json({ message: translate['Price / Status Updated.'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -177,15 +152,13 @@ exports.rejectRequest = async (req, res) => {
   try {
     let { requestId } = req.params;
 
-    await Bookings.findByIdAndUpdate(requestId, { status: "rejected" });
+    await Bookings.findByIdAndUpdate(requestId, { status: 'rejected' });
 
-    res.json({ message: translate["Request rejected."] });
+    res.json({ message: translate['Request rejected.'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -199,17 +172,17 @@ exports.checkOut = async (req, res) => {
     let amount_to_send = Math.floor(unit_amount - getCommission(unit_amount)); // deducting commission here
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
+      payment_method_types: ['card'],
       line_items,
-      locale: "fr",
-      mode: "payment",
+      locale: 'fr',
+      mode: 'payment',
       success_url: `${process.env.CLIENT_URL}/redirect=true&success=true`,
       cancel_url: `${process.env.CLIENT_URL}/redirect=true&success=false`,
       payment_intent_data: {
         transfer_data: {
           destination: data.stripe,
-          amount: amount_to_send,
-        },
+          amount: amount_to_send
+        }
       },
       metadata: {
         type: data?.type,
@@ -217,69 +190,64 @@ exports.checkOut = async (req, res) => {
         user: data?.user,
         payment: data?.payment,
         item: data?.item,
-        amount: data?.unit_amount,
-      },
+        amount: data?.unit_amount
+      }
     });
 
     res.json({ success: true, url: session.url });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
 // Stripe Webhook
 exports.webhook = async (req, res) => {
-  let sig = req.headers["stripe-signature"];
+  let sig = req.headers['stripe-signature'];
   let event;
   try {
-    event = stripe.webhooks.constructEvent(
-      req.rawBody,
-      sig,
-      process.env.WEBHOOK_SEC
-    );
+    event = stripe.webhooks.constructEvent(req.rawBody, sig, process.env.WEBHOOK_SEC);
   } catch (err) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
   switch (event.type) {
-    case "checkout.session.completed": {
+    case 'checkout.session.completed': {
       const session = event.data.object; // get session
       const { metadata } = session; // get metadata
 
       let { type, payment, request, user, item, amount } = metadata;
 
-      if (type === "service_payment") {
+      if (type === 'service_payment') {
         /**
          *? Booking props
          ** payment
          ** user
          ** request
          */
-        let booking = await Bookings.findById(request);
+        let booking = await Bookings.findById(request).populate('serviceProvider');
         booking.paid = payment;
         booking.payment_history.push({
           user,
           date: new Date(),
-          amount:
-            payment === "deposit" ? booking.deposit_price : booking.final_price,
+          amount: payment === 'deposit' ? booking.deposit_price : booking.final_price
         });
         booking.save();
-      } else if (type === "wishlist_payment") {
+        // let message = `${'Njm'} sent payment of ${amount / 10} for booking.`;
+        // await sendMessage(booking.serviceProvider.phone, message);
+      } else if (type === 'wishlist_payment') {
         /**
          *? Wishlist props
          ** item
          ** amount
          ** user
          */
-        let wishlistItem = await Wishlists.findById(item);
+        let wishlistItem = await Wishlists.findById(item).populate('user');
 
         wishlistItem.paid.push({
-          amount: amount / 100, // saving amount in euros
-          user,
+          amount: amount / 100, //* saving amount in euros
+          user
         });
         wishlistItem.save();
       }
@@ -296,27 +264,25 @@ exports.canRateInfo = async (req, res) => {
     let { userId, serviceProviderId } = req.params;
     let bookingsCount = await Bookings.countDocuments({
       $and: [
-        { paid: "paid" },
+        { paid: 'paid' },
         { serviceProvider: serviceProviderId },
         {
           $or: [
             {
-              user: userId,
+              user: userId
             },
             {
-              "payment_history.user": userId,
-            },
-          ],
-        },
-      ],
+              'payment_history.user': userId
+            }
+          ]
+        }
+      ]
     });
 
     res.json({ success: true, status: bookingsCount > 0 });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };

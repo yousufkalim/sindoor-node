@@ -48,6 +48,7 @@ exports.translate = {
   'No token found, Authorization denied': 'Aucun jeton trouvé, autorisation refusée',
   'Your session has been expired': 'Votre session a expiré',
   'OTP sent': 'OTP envoyé',
+  'Message sent': 'Message envoyé',
   'is your Sindoor confirmation code.': 'est votre code de confirmation Sindoor.',
   'Message from': 'Message de',
   'Email sent successfully': 'E-mail envoyé avec succès',

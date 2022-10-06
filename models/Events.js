@@ -3,31 +3,31 @@
  * @author Najam Ul Saqib
  */
 
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 // Schema
 const EventSchema = new mongoose.Schema({
   organizer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "users",
+    ref: 'users'
   },
   name: {
     type: String,
-    required: true,
+    required: true
   },
   type: {
     type: String,
-    required: true,
+    required: true
   },
   start_date: {
     date: Date,
     start_time: String,
-    end_time: String,
+    end_time: String
   },
   end_date: {
     date: Date,
     start_time: String,
-    end_time: String,
+    end_time: String
   },
   location: {
     label: String,
@@ -35,55 +35,55 @@ const EventSchema = new mongoose.Schema({
     city: String,
     PostalCode: String,
     lat: Number,
-    lng: Number,
+    lng: Number
   },
   description: {
-    type: String,
-    required: true,
+    type: String
+    // required: true,
   },
   code: {
     type: String,
-    required: true,
+    required: true
   },
   photos: [],
   serviceProviders: [
     {
       serviceProvider: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "serviceProviders",
+        ref: 'serviceProviders'
       },
       service: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "services",
+        ref: 'services'
       },
       status: {
         type: String,
-        enum: ["pending", "accepted", "refused"],
-        default: "pending",
-      },
-    },
+        enum: ['pending', 'accepted', 'refused'],
+        default: 'pending'
+      }
+    }
   ],
   guests: [
     {
       guest: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: 'users'
       },
       role: {
         type: String,
-        enum: ["Co-Organizer", "Guest"],
-        default: "Guest",
+        enum: ['Co-Organizer', 'Guest'],
+        default: 'Guest'
       },
       status: {
         type: String,
-        enum: ["pending", "accepted", "refused"],
-        default: "pending",
+        enum: ['pending', 'accepted', 'refused'],
+        default: 'pending'
       },
       members: {
         type: Number,
-        default: 0,
-      },
-    },
+        default: 0
+      }
+    }
   ],
   timeline: [
     {
@@ -92,10 +92,10 @@ const EventSchema = new mongoose.Schema({
       start_date: Date,
       start_time: String,
       end_date: Date,
-      end_time: String,
-    },
-  ],
+      end_time: String
+    }
+  ]
 });
 
 // Model
-module.exports = mongoose.model("events", EventSchema);
+module.exports = mongoose.model('events', EventSchema);

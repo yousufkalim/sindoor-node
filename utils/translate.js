@@ -89,7 +89,7 @@ exports.translate = {
   'Guest Status Updated.': "Statut d'invité mis à jour.",
   'Event updated.': 'Événement mis à jour.',
   'User Removed from Event.': "Utilisateur supprimé de l'événement.",
-  'Timeline Create Successfully!': 'Chronologie Créer avec succès !',
+  'Timeline Create Successfully!': 'Chronologie créée avec succès',
   'Wishlist created.': 'Liste de souhaits créée.',
   'Item deleted.': 'Article supprimé.',
   'No Item found.': 'Aucun article trouvé.',

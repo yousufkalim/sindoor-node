@@ -5,6 +5,7 @@
 
 const moment = require('moment');
 const Bookings = require('../models/Bookings');
+const Users = require('../models/Users');
 const Wishlists = require('../models/Wishlists');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { getCommission } = require('../utils/getCommission');
@@ -215,9 +216,10 @@ exports.webhook = async (req, res) => {
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object; // get session
-      const { metadata } = session; // get metadata
+      const { metadata, customer_details } = session; // get metadata
 
       let { type, payment, request, user, item, amount } = metadata;
+      console.log('customer_details: ', customer_details);
 
       if (type === 'service_payment') {
         /**
@@ -227,6 +229,8 @@ exports.webhook = async (req, res) => {
          ** request
          */
         let booking = await Bookings.findById(request).populate('serviceProvider');
+
+        console.log('Phone Number ==> ', user);
         booking.paid = payment;
         booking.payment_history.push({
           user,
@@ -234,8 +238,10 @@ exports.webhook = async (req, res) => {
           amount: payment === 'deposit' ? booking.deposit_price : booking.final_price
         });
         booking.save();
-        // let message = `${'Njm'} sent payment of ${amount / 10} for booking.`;
-        // await sendMessage(booking.serviceProvider.phone, message);
+        let message = `${customer_details?.name} a envoyé un paiement de ${
+          amount / 100
+        } pour la réservation.`;
+        await sendMessage(booking.serviceProvider.phone, message);
       } else if (type === 'wishlist_payment') {
         /**
          *? Wishlist props
@@ -250,6 +256,12 @@ exports.webhook = async (req, res) => {
           user
         });
         wishlistItem.save();
+        let message = `${customer_details?.name} a envoyé un paiement de ${
+          amount / 100
+        } pour l'article de la liste de souhaits.`;
+        if (wishlistItem?.user?.phone) {
+          await sendMessage(wishlistItem.user.phone, message);
+        }
       }
     }
     default: {

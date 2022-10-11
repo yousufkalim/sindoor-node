@@ -35,6 +35,6 @@ exports.findDistance = async (lat, lng, radius, services) => {
 
     return Services;
   } catch (err) {
-    console.log(err, "Distance Error");
+    console.log(err, 'Distance Error');
   }
 };

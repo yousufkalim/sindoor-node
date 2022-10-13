@@ -2,18 +2,18 @@
  * Event CRUD routes
  * @author Najam Ul Saqib
  */
-const router = require("express").Router();
-const events = require("../controllers/events");
-const { upload } = require("../middleware/multer");
+const router = require('express').Router();
+const events = require('../controllers/events');
+const { upload } = require('../middleware/multer');
 const {
   validateWishlist,
   validateTimeLine,
   createEventValidate,
   validateJoinEvent,
   validatePayment,
-  isValidated,
-} = require("../middleware/validators");
-const { checkAuth } = require("../middleware/checkAuth");
+  isValidated
+} = require('../middleware/validators');
+const { checkAuth } = require('../middleware/checkAuth');
 
 /**
  ** Routes
@@ -26,108 +26,92 @@ const { checkAuth } = require("../middleware/checkAuth");
 
 // Create event.
 router.post(
-  "/",
+  '/',
   checkAuth,
-  upload.array("photos"),
+  upload.array('photos'),
   createEventValidate,
   isValidated,
   events.create
 );
 
 // Join event via code
-router.put(
-  "/join",
-  checkAuth,
-  validateJoinEvent,
-  isValidated,
-  events.joinEvent
-);
+router.put('/join', checkAuth, validateJoinEvent, isValidated, events.joinEvent);
 
 // change guest role
-router.put("/role/:eventId/:userId", events.changeRole);
+router.put('/role/:eventId/:userId', events.changeRole);
 
 // Remove guest from event
-router.put("/removeGuest/:eventId/:userId", events.removeGuest);
+router.put('/removeGuest/:eventId/:userId', events.removeGuest);
 
 // update guest status
-router.put("/status/:eventId/:userId", events.updateGuestStatus);
+router.put('/status/:eventId/:userId', events.updateGuestStatus);
 
 // Update Event
-router.put("/:eventId", upload.array("photos"), checkAuth, events.updateEvent);
+router.put('/:eventId', upload.array('photos'), checkAuth, events.updateEvent);
 
 // delete event
-router.delete("/:eventId", events.delete);
+router.delete('/:eventId', events.delete);
 
 // Crete event timeline
-router.post(
-  "/:eventId/timeline",
-  validateTimeLine,
-  isValidated,
-  events.createTimeline
-);
+router.post('/:eventId/timeline', validateTimeLine, isValidated, events.createTimeline);
+// Crete event timeline
+router.patch('/:eventId/timeline/:timelineId', validateTimeLine, isValidated, events.editTimeline);
+
+// Crete event timeline
+router.delete('/:eventId/timeline/:timelineId', events.deleteTimeline);
 
 // Get wishlists of event
-router.get("/:eventId/wishlists", events.wishlists);
+router.get('/:eventId/wishlists', events.wishlists);
 
 // Create wishlists of event
 router.post(
-  "/wishlists",
-  upload.single("image"),
+  '/wishlists',
+  upload.single('image'),
   validateWishlist,
   isValidated,
   events.CreateWishlists
 );
 
 // Delete wishlist Item
-router.delete("/wishlists/:itemId", events.deleteWishlistItem);
+router.delete('/wishlists/:itemId', events.deleteWishlistItem);
 
 // pay amount
-router.post(
-  "/wishlists/:itemId",
-  checkAuth,
-  validatePayment,
-  isValidated,
-  events.payAmount
-);
+router.post('/wishlists/:itemId', checkAuth, validatePayment, isValidated, events.payAmount);
 
 // upload pictures
-router.post(
-  "/pictures/:eventId",
-  upload.array("pictures"),
-  events.uploadPictures
-);
+router.post('/pictures/:eventId', upload.array('pictures'), events.uploadPictures);
 
 // get not approved pictures
-router.get("/pictures/:eventId", events.getPicturesNeedApproval);
+router.get('/pictures/:eventId', events.getPicturesNeedApproval);
 
 // change image status
-router.put("/pictures/:eventId", events.approveAllImages);
+router.put('/pictures/:eventId', events.approveAllImages);
 
 // change image status
-router.put("/pictures/:pictureId/status", events.changePictureStatus);
+router.put('/pictures/:pictureId/status', events.changePictureStatus);
 
 // get pictures approved
-router.get("/pictures/:eventId/approved", events.getApprovedPictures);
+router.get('/pictures/:eventId/approved', events.getApprovedPictures);
 
 // get favorite pictures
-router.get("/pictures/:eventId/:userId", events.getLikedPictures);
+router.get('/pictures/:eventId/:userId', events.getLikedPictures);
 
 // Like picture
-router.patch("/pictures/:pictureId/:userId", events.likePicture);
+router.patch('/pictures/:pictureId/:userId', events.likePicture);
 
 // Get 10 Upcoming events
-router.get("/", checkAuth, events.getFewUpcomingEvents);
+router.get('/', checkAuth, events.getFewUpcomingEvents);
 
 // Get all Upcoming events
-router.get("/all", checkAuth, events.getUpcomingEvents);
+router.get('/all', checkAuth, events.getUpcomingEvents);
 
 // Get Past events
-router.get("/past", checkAuth, events.getPastEvents);
+router.get('/past', checkAuth, events.getPastEvents);
 
 // Get names of upcoming events
-router.get("/names", checkAuth, events.getNamesOfUpcomingEvents);
+router.get('/names', checkAuth, events.getNamesOfUpcomingEvents);
 
 // Get event by id
-router.get("/:eventId", events.getEventByID);
+router.get('/:eventId', events.getEventByID);
 
 module.exports = router;

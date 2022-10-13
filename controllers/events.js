@@ -1,10 +1,10 @@
-const Events = require("../models/Events");
-const Pictures = require("../models/Pictures");
-const Users = require("../models/Users");
-const Wishlists = require("../models/Wishlists");
-const fs = require("fs"); // to delete images
-const { translate } = require("../utils/translate");
-const moment = require("moment");
+const Events = require('../models/Events');
+const Pictures = require('../models/Pictures');
+const Users = require('../models/Users');
+const Wishlists = require('../models/Wishlists');
+const fs = require('fs'); // to delete images
+const { translate } = require('../utils/translate');
+const moment = require('moment');
 
 //* Create and event
 exports.create = async (req, res) => {
@@ -14,18 +14,18 @@ exports.create = async (req, res) => {
     if (!user) {
       return res.status(409).json({
         success: false,
-        message: translate["Service Provider Cannot create event."],
+        message: translate['Service Provider Cannot create event.']
       });
     }
     // Generate a random code
     let code = Math.random().toFixed(10).slice(-10);
     code = code.match(/.{1,3}/g);
-    code = code.slice(0, -1).join("-") + code.slice(-1);
+    code = code.slice(0, -1).join('-') + code.slice(-1);
 
     // store fille path into array
     let images = [];
     if (req.files) {
-      req.files.forEach((image) => {
+      req.files.forEach(image => {
         images.push(image.path);
       });
     }
@@ -35,7 +35,7 @@ exports.create = async (req, res) => {
     event.code = code;
     event.location = JSON.parse(req.body.location);
     event.start_date = JSON.parse(req.body.start_date);
-    if (req.body.end_date !== "undefined") {
+    if (req.body.end_date !== 'undefined') {
       event.end_date = JSON.parse(req.body.end_date);
     }
     event.organizer = userId;
@@ -44,7 +44,7 @@ exports.create = async (req, res) => {
 
     let userEvent = {
       event: event._id,
-      role: "Organizer",
+      role: 'Organizer'
     };
 
     // update events array in user data
@@ -53,15 +53,13 @@ exports.create = async (req, res) => {
 
     res.json({
       success: true,
-      message: translate["Event Created Successfully."],
-      event,
+      message: translate['Event Created Successfully.'],
+      event
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -74,27 +72,27 @@ exports.joinEvent = async (req, res) => {
     if (!user) {
       return res.status(409).json({
         success: false,
-        message: translate["Service Provider Cannot join event as Guest."],
+        message: translate['Service Provider Cannot join event as Guest.']
       });
     }
     let event = await Events.findOne({ code });
     if (!event) {
       return res.status(409).json({
         success: false,
-        message: translate["Event not found."],
+        message: translate['Event not found.']
       });
     }
-    let alreadyMember = await Events.findOne({ code, "guests.guest": userId });
+    let alreadyMember = await Events.findOne({ code, 'guests.guest': userId });
     if (alreadyMember) {
       return res.status(409).json({
         success: false,
-        message: translate["You are already a member of this event."],
+        message: translate['You are already a member of this event.']
       });
     }
     if (event.organizer == userId) {
       return res.status(409).json({
         success: false,
-        message: translate["Organizer cannot join event as guest."],
+        message: translate['Organizer cannot join event as guest.']
       });
     }
     let guest = { guest: userId, members };
@@ -103,7 +101,7 @@ exports.joinEvent = async (req, res) => {
 
     let userEvent = {
       event: event._id,
-      role: "Guest",
+      role: 'Guest'
     };
 
     // update events array in user data
@@ -112,15 +110,13 @@ exports.joinEvent = async (req, res) => {
 
     res.json({
       success: true,
-      message: translate["Event joined successfully."],
-      event,
+      message: translate['Event joined successfully.'],
+      event
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -131,55 +127,53 @@ exports.changeRole = async (req, res) => {
     let event = await Events.findOne(
       {
         _id: eventId,
-        "guests.guest": userId,
+        'guests.guest': userId
       },
-      { "guests.$": 1 }
+      { 'guests.$': 1 }
     );
 
     //* Update role by getting previous role
-    let role = "Co-Organizer";
-    if (event.guests[0].role === "Co-Organizer") {
-      role = "Guest";
+    let role = 'Co-Organizer';
+    if (event.guests[0].role === 'Co-Organizer') {
+      role = 'Guest';
     }
 
     await Events.findOneAndUpdate(
       {
         _id: eventId,
-        "guests.guest": userId,
+        'guests.guest': userId
       },
       {
-        $set: { "guests.$.role": role },
+        $set: { 'guests.$.role': role }
       },
       { new: true }
     )
-      .then(async (resp) => {
+      .then(async resp => {
         await Users.findOneAndUpdate(
           {
             _id: userId,
-            "events.event": eventId,
+            'events.event': eventId
           },
           {
-            $set: { "events.$.role": role },
+            $set: { 'events.$.role': role }
           },
           { new: true }
         );
         res.json({
           success: true,
-          message: translate["Guest Status Updated."],
-          event: resp,
+          message: translate['Guest Status Updated.'],
+          event: resp
         });
       })
-      .catch((err) => {
+      .catch(err => {
         throw err;
       });
 
     // res.json({ event });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -193,29 +187,27 @@ exports.updateGuestStatus = async (req, res) => {
     await Events.findOneAndUpdate(
       {
         _id: eventId,
-        "guests.guest": userId,
+        'guests.guest': userId
       },
       {
-        $set: { "guests.$.status": "accepted" },
+        $set: { 'guests.$.status': 'accepted' }
       },
       { new: true }
     )
-      .then((resp) => {
+      .then(resp => {
         res.json({
           success: true,
-          message: translate["Guest Status Updated."],
-          event: resp,
+          message: translate['Guest Status Updated.'],
+          event: resp
         });
       })
-      .catch((err) => {
+      .catch(err => {
         throw err;
       });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -226,26 +218,24 @@ exports.getFewUpcomingEvents = async (req, res) => {
     let events = await Events.find({
       $and: [
         {
-          $or: [{ organizer: userId }, { "guests.guest": userId }],
+          $or: [{ organizer: userId }, { 'guests.guest': userId }]
         },
         {
           $or: [
-            { "end_date.date": { $gte: moment().format("L") } },
-            { "start_date.date": { $gte: moment().format("L") } },
-          ],
-        },
-      ],
+            { 'end_date.date': { $gte: moment().format('L') } },
+            { 'start_date.date': { $gte: moment().format('L') } }
+          ]
+        }
+      ]
     })
-      .sort({ "start_date.date": 1 })
+      .sort({ 'start_date.date': 1 })
       .limit(10)
-      .populate("guests.guest", "first_name last_name photo");
+      .populate('guests.guest', 'first_name last_name photo');
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -256,25 +246,23 @@ exports.getUpcomingEvents = async (req, res) => {
     let events = await Events.find({
       $and: [
         {
-          $or: [{ organizer: userId }, { "guests.guest": userId }],
+          $or: [{ organizer: userId }, { 'guests.guest': userId }]
         },
         {
           $or: [
-            { "end_date.date": { $gte: moment().format("L") } },
-            { "start_date.date": { $gte: moment().format("L") } },
-          ],
-        },
-      ],
+            { 'end_date.date': { $gte: moment().format('L') } },
+            { 'start_date.date': { $gte: moment().format('L') } }
+          ]
+        }
+      ]
     })
-      .sort({ "start_date.date": 1 })
-      .populate("guests.guest", "first_name last_name photo");
+      .sort({ 'start_date.date': 1 })
+      .populate('guests.guest', 'first_name last_name photo');
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -287,25 +275,23 @@ exports.getNamesOfUpcomingEvents = async (req, res) => {
         $and: [
           {
             // organizer: userId,
-            $or: [{ organizer: userId }, { "guests.guest": userId }],
+            $or: [{ organizer: userId }, { 'guests.guest': userId }]
           },
           {
             $or: [
-              { "end_date.date": { $gte: moment().format("L") } },
-              { "start_date.date": { $gte: moment().format("L") } },
-            ],
-          },
-        ],
+              { 'end_date.date': { $gte: moment().format('L') } },
+              { 'start_date.date': { $gte: moment().format('L') } }
+            ]
+          }
+        ]
       },
-      "_id name"
-    ).sort({ "start_date.date": 1 });
+      '_id name'
+    ).sort({ 'start_date.date': 1 });
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -316,25 +302,23 @@ exports.getPastEvents = async (req, res) => {
     let events = await Events.find({
       $and: [
         {
-          $or: [{ organizer: userId }, { "guests.guest": userId }],
+          $or: [{ organizer: userId }, { 'guests.guest': userId }]
         },
         {
           $or: [
-            { "end_date.date": { $lt: moment().format("L") } },
-            { "start_date.date": { $lt: moment().format("L") } },
-          ],
-        },
-      ],
+            { 'end_date.date': { $lt: moment().format('L') } },
+            { 'start_date.date': { $lt: moment().format('L') } }
+          ]
+        }
+      ]
     })
-      .sort({ "start_date.date": 1 })
-      .populate("guests.guest", "first_name last_name photo");
+      .sort({ 'start_date.date': 1 })
+      .populate('guests.guest', 'first_name last_name photo');
     res.json({ success: true, events });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -344,17 +328,15 @@ exports.getEventByID = async (req, res) => {
     let { eventId } = req.params;
 
     let event = await Events.findById(eventId).populate(
-      "guests.guest",
-      "first_name last_name photo"
+      'guests.guest',
+      'first_name last_name photo'
     );
 
     res.json({ success: true, event });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -367,7 +349,7 @@ exports.updateEvent = async (req, res) => {
     // store fille path into array
     let images = [];
     if (req.files) {
-      req.files.forEach((image) => {
+      req.files.forEach(image => {
         images.push(image.path);
       });
     }
@@ -376,7 +358,7 @@ exports.updateEvent = async (req, res) => {
 
     body.location = JSON.parse(body.location);
     body.start_date = JSON.parse(body.start_date);
-    if (req.body.end_date !== "undefined") {
+    if (req.body.end_date !== 'undefined') {
       body.end_date = JSON.parse(body.end_date);
     } else {
       body.end_date = undefined;
@@ -385,10 +367,7 @@ exports.updateEvent = async (req, res) => {
     let event = await Events.findOneAndUpdate(
       {
         _id: eventId,
-        $or: [
-          { organizer: userId },
-          { "guests.guest": userId, "guests.role": "Co-Organizer" },
-        ],
+        $or: [{ organizer: userId }, { 'guests.guest': userId, 'guests.role': 'Co-Organizer' }]
       },
       body,
       { new: true }
@@ -396,17 +375,15 @@ exports.updateEvent = async (req, res) => {
     if (!event) {
       return res.json({
         success: false,
-        message: translate["Event not found."],
+        message: translate['Event not found.']
       });
     }
 
-    res.json({ success: true, message: translate["Event updated."], event });
+    res.json({ success: true, message: translate['Event updated.'], event });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -417,16 +394,14 @@ exports.delete = async (req, res) => {
     if (!event) {
       return res.status(404).json({
         success: false,
-        message: translate["Event not found."],
+        message: translate['Event not found.']
       });
     }
-    res.json({ success: true, message: translate["Event deleted."] });
+    res.json({ success: true, message: translate['Event deleted.'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -435,26 +410,23 @@ exports.removeGuest = async (req, res) => {
   try {
     let { userId, eventId } = req.params;
 
-    await Events.findOneAndUpdate(
-      { _id: eventId },
-      { $pull: { guests: { guest: userId } } }
-    ).then(async () => {
-      await Users.findOneAndUpdate(
-        { _id: userId },
-        { $pull: { events: { event: eventId } } }
-      ).then(() =>
-        res.json({
-          success: true,
-          message: translate["User Removed from Event."],
-        })
-      );
-    });
+    await Events.findOneAndUpdate({ _id: eventId }, { $pull: { guests: { guest: userId } } }).then(
+      async () => {
+        await Users.findOneAndUpdate(
+          { _id: userId },
+          { $pull: { events: { event: eventId } } }
+        ).then(() =>
+          res.json({
+            success: true,
+            message: translate['User Removed from Event.']
+          })
+        );
+      }
+    );
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -465,19 +437,66 @@ exports.createTimeline = async (req, res) => {
     let event = await Events.findById(eventId);
     let { body } = req;
     if (!event) {
-      return res
-        .status(400)
-        .json({ success: false, message: translate["Event not found."] });
+      return res.status(400).json({ success: false, message: translate['Event not found.'] });
     }
     event.timeline.push(body);
     event.save();
-    res.json({ event, message: translate["Timeline Create Successfully!"] });
+    res.json({ event, message: translate['Timeline Create Successfully!'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
+  }
+};
+
+exports.editTimeline = async (req, res) => {
+  try {
+    let data = req.body;
+    let { eventId, timelineId } = req.params;
+    let event = await Events.findOneAndUpdate(
+      { _id: eventId, 'timeline._id': timelineId },
+      {
+        $set: {
+          'timeline.$': data
+        }
+      },
+      { new: true }
+    );
+    res.json({
+      success: true,
+      message: translate['Timeline Updated Successfully!'],
+      event
+    });
+  } catch (err) {
+    // Error handling
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
+  }
+};
+
+exports.deleteTimeline = async (req, res) => {
+  try {
+    let { eventId, timelineId } = req.params;
+    let event = await Events.findOneAndUpdate(
+      { _id: eventId },
+      {
+        $pull: {
+          timeline: {
+            _id: timelineId
+          }
+        }
+      },
+      { new: true }
+    );
+    res.json({
+      success: true,
+      message: translate['Timeline Deleted Successfully!'],
+      event
+    });
+  } catch (err) {
+    // Error handling
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -486,10 +505,10 @@ exports.wishlists = async (req, res) => {
   try {
     const { eventId } = req.params;
     let { sort } = req.query;
-    sort = sort === "true";
+    sort = sort === 'true';
     let wishlist = await Wishlists.find({ event: eventId })
-      .populate("paid.user", "first_name last_name photo ")
-      .populate("user", "bank.stripeID");
+      .populate('paid.user', 'first_name last_name photo ')
+      .populate('user', 'bank.stripeID');
 
     // calcs
     wishlist.forEach((item, index) => {
@@ -502,7 +521,7 @@ exports.wishlists = async (req, res) => {
       wishlist[index] = {
         ...item._doc,
         sum,
-        remaining_amount: remaining_amount.toFixed(2),
+        remaining_amount: remaining_amount.toFixed(2)
       };
     });
 
@@ -518,10 +537,8 @@ exports.wishlists = async (req, res) => {
     res.json({ success: true, wishlist, sort });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -532,7 +549,7 @@ exports.CreateWishlists = async (req, res) => {
 
     let event = await Events.findById(eventId);
     if (!event) {
-      return res.status(400).json({ message: translate["Event not found."] });
+      return res.status(400).json({ message: translate['Event not found.'] });
     }
 
     if (req.file) {
@@ -546,14 +563,12 @@ exports.CreateWishlists = async (req, res) => {
     res.json({
       success: true,
       wishlist,
-      message: translate["Wishlist created."],
+      message: translate['Wishlist created.']
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -561,14 +576,12 @@ exports.deleteWishlistItem = async (req, res) => {
   try {
     let { itemId } = req.params;
     await Wishlists.findByIdAndDelete(itemId).then(() => {
-      res.json({ success: true, message: translate["Item deleted."] });
+      res.json({ success: true, message: translate['Item deleted.'] });
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -579,20 +592,16 @@ exports.payAmount = async (req, res) => {
     let user = req.user._id;
     let item = await Wishlists.findById(itemId);
     if (!item) {
-      return res
-        .status(404)
-        .json({ success: false, message: translate["No Item found."] });
+      return res.status(404).json({ success: false, message: translate['No Item found.'] });
     }
     item.paid.push({ amount, user });
     item.save();
 
-    res.json({ success: true, message: translate["Payment Successful."] });
+    res.json({ success: true, message: translate['Payment Successful.'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -602,28 +611,26 @@ exports.uploadPictures = async (req, res) => {
     let { from } = req.body;
     let pictures = [];
     if (req.files) {
-      req.files.forEach((picture) => {
+      req.files.forEach(picture => {
         let doc = {
           event: eventId,
           picture: picture.path,
-          from: from,
+          from: from
         };
         pictures.push(doc);
       });
     }
     Pictures.insertMany(pictures)
       .then(() => {
-        res.json({ message: translate["Pictures Uploaded."], success: true });
+        res.json({ message: translate['Pictures Uploaded.'], success: true });
       })
-      .catch((err) => {
+      .catch(err => {
         throw err;
       });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -632,17 +639,15 @@ exports.getPicturesNeedApproval = async (req, res) => {
     let { eventId } = req.params;
     let pictures = await Pictures.find({
       event: eventId,
-      status: "pending",
+      status: 'pending'
     })
-      .populate("from", "first_name last_name photo")
+      .populate('from', 'first_name last_name photo')
       .sort({ createdAt: -1 });
     res.json({ pictures });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -654,23 +659,21 @@ exports.getApprovedPictures = async (req, res) => {
       $or: [
         {
           event: eventId,
-          status: "approved",
+          status: 'approved'
         },
         {
           event: eventId,
-          from: user,
-        },
-      ],
+          from: user
+        }
+      ]
     })
-      .populate("from", "first_name last_name photo")
+      .populate('from', 'first_name last_name photo')
       .sort({ createdAt: -1 });
     res.json({ pictures, user });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -679,28 +682,26 @@ exports.changePictureStatus = async (req, res) => {
     let { pictureId } = req.params;
     let { status } = req.body;
     let picture = await Pictures.findById(pictureId);
-    if (status === "approved") {
+    if (status === 'approved') {
       //update
       picture.status = status;
       picture.save();
-      return res.json({ message: translate["Image approved."] });
+      return res.json({ message: translate['Image approved.'] });
     } else {
       // delete
-      fs.unlink(picture.picture, async (err) => {
+      fs.unlink(picture.picture, async err => {
         if (err) {
-          console.log(err, "err");
+          console.log(err, 'err');
         } else {
           await Pictures.findByIdAndDelete(pictureId);
         }
       });
-      return res.json({ message: translate["Image Deleted."] });
+      return res.json({ message: translate['Image Deleted.'] });
     }
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -709,17 +710,15 @@ exports.getLikedPictures = async (req, res) => {
     let { eventId, userId } = req.params;
     let pictures = await Pictures.find({
       event: eventId,
-      "likes.user": userId,
+      'likes.user': userId
     })
-      .populate("from", "first_name last_name photo")
+      .populate('from', 'first_name last_name photo')
       .sort({ createdAt: -1 });
     res.json({ pictures });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -732,32 +731,30 @@ exports.likePicture = async (req, res) => {
 
     let alreadyLiked = await Pictures.findOne({
       _id: pictureId,
-      "likes.user": userId,
+      'likes.user': userId
     });
     if (alreadyLiked) {
       //dislike
       await Pictures.findByIdAndUpdate(
         pictureId,
         {
-          $pull: { likes: { user: userId } },
+          $pull: { likes: { user: userId } }
         },
         { new: true }
-      ).then((resp) => {
-        return res.json({ picture: resp, message: translate["Like Removed."] });
+      ).then(resp => {
+        return res.json({ picture: resp, message: translate['Like Removed.'] });
       });
     } else {
       // like
       picture.likes.push({ user: userId });
       picture.save();
 
-      return res.json({ picture, message: translate["Image liked."] });
+      return res.json({ picture, message: translate['Image liked.'] });
     }
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -767,22 +764,20 @@ exports.approveAllImages = async (req, res) => {
     await Pictures.updateMany(
       {
         event: eventId,
-        status: "pending",
+        status: 'pending'
       },
       {
-        $set: { status: "approved" },
+        $set: { status: 'approved' }
       }
     ).then(() => {
       return res.json({
         success: true,
-        message: translate["Images Approved."],
+        message: translate['Images Approved.']
       });
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };

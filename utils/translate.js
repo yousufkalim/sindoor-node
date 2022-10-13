@@ -121,5 +121,7 @@ exports.translate = {
   'Event deleted.': 'Événement supprimé.',
   'Message is required': 'Un message est requis',
   'Price Type is require.': 'Le type de prix est requis.',
-  'Invalid Phone number': 'Numéro de téléphone invalide'
+  'Invalid Phone number': 'Numéro de téléphone invalide',
+  'Timeline Updated Successfully!': 'Chronologie mise à jour avec succès !',
+  'Timeline Deleted Successfully!': 'Chronologie supprimée avec succès !'
 };

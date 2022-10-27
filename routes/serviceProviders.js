@@ -32,7 +32,7 @@ router.post(
 
 // Read
 router.get("/", serviceProviders.getFew); // Get Few users at once
-router.get("/getByAdmin", checkAdminAuth, serviceProviders.getByAdmin); // GetByAdmin
+router.post("/getByAdmin", checkAdminAuth, serviceProviders.getByAdmin); // GetByAdmin
 router.get("/getAll", serviceProviders.getAllServiceProviders); // getAllServiceProviders
 router.get("/map", serviceProviders.getUsersForMap); // get users for map
 router.get("/:userId", serviceProviders.getById); // Get one user by it's id

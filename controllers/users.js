@@ -116,7 +116,8 @@ exports.getAll = async (req, res) => {
 exports.getByAdmin = async (req, res) => {
   try {
     const { pageNumber, pageSize } = req.body;
-    const users = await Users.find()
+     console.log("a",req.body)
+    const users = await Users.find({deleted:false})
       .skip(pageNumber * pageSize)
       .limit(parseInt(pageSize))
       .sort({ date: -1 }); // Finding all the users from db
@@ -161,7 +162,6 @@ exports.getById = async (req, res) => {
 exports.update = async (req, res) => {
   try {
     const { userId } = req.params; // Getting user id from URL parameter
-
     // Cannot update with this API
     if (req.body.password) {
       req.body.password = undefined;
@@ -220,8 +220,6 @@ exports.delete = async (req, res) => {
         }
       );
     } else {
-      console.log(req.body, "pass");
-      console.log(user.password, "user");
       const isMatched = bcrypt.compareSync(password, user.password);
       if (!isMatched) {
         // If password not matched

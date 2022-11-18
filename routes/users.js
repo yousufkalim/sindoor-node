@@ -32,7 +32,7 @@ router.post(
 // Read
 router.get('/', users.getAll); // Get all users at once
 // Read
-router.get('/getByAdmin', checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
+router.post('/getByAdmin', checkAdminAuth, users.getByAdmin); // Get all users at once by Admin
 
 router.get('/:userId', users.getById); // Get one user by it's id
 

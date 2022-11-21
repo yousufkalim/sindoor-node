@@ -20,7 +20,14 @@ const { checkAdminAuth } = require('../middleware/adminAuth');
  */
 
 // Create - User Signup
-router.post('/', upload.single('image'), validateUser, isValidated, users.create);
+router.post(
+  '/',
+  upload.single('image'),
+  validateUser,
+  isValidated,
+  users.createAccountCheck,
+  users.create
+);
 
 // Read
 router.get('/', users.getAll); // Get all users at once
@@ -41,12 +48,12 @@ router.put(
   upload.fields([
     {
       name: 'front',
-      maxCount: 1,
+      maxCount: 1
     },
     {
       name: 'back',
-      maxCount: 1,
-    },
+      maxCount: 1
+    }
   ]),
   users.addBank
 );

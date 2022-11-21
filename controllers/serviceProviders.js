@@ -2,14 +2,14 @@
  * Service provider CRUD controllers
  * @author Najam Ul Saqib
  */
-const Users = require("../models/Users");
-const ServiceProviders = require("../models/ServiceProviders");
-const bcrypt = require("bcryptjs");
-const { sendOTP } = require("../utils/sendOTP");
-const { translate } = require("../utils/translate");
+const Users = require('../models/Users');
+const ServiceProviders = require('../models/ServiceProviders');
+const bcrypt = require('bcryptjs');
+const { sendOTP } = require('../utils/sendOTP');
+const { translate } = require('../utils/translate');
 const bcryptSalt = process.env.BCRYPT_SALT || 10;
-const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
-const { stripeErrors } = require("../utils/stripeErrors");
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const { stripeErrors } = require('../utils/stripeErrors');
 
 /**
  * Create User - Signup
@@ -25,15 +25,13 @@ exports.create = async (req, res) => {
     // Extra Validations
     if (existingUser || existingServiceProvider) {
       // If we found existing user in db
-      return res
-        .status(409)
-        .json({ success: false, message: translate["User already exists."] });
+      return res.status(409).json({ success: false, message: translate['User already exists.'] });
     }
 
     if (confirmPassword !== password) {
       return res.status(400).json({
         success: false,
-        message: translate["Password and Confirm password should be same."],
+        message: translate['Password and Confirm password should be same.']
       });
     }
 
@@ -60,15 +58,15 @@ exports.create = async (req, res) => {
     if (otpResp.err) {
       return res.status(400).json({
         success: false,
-        message: translate["Invalid Phone number"],
+        message: translate['Invalid Phone number']
       });
     }
 
     user.save(); // save user object
     res.json({
       success: true,
-      message: translate["Account created and otp sent"],
-      user,
+      message: translate['Account created and otp sent'],
+      user
     }); //Success
 
     // // Adding user in db
@@ -83,16 +81,12 @@ exports.create = async (req, res) => {
     // });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err.message);
-    res
-      .status(500)
-      .json({
-        success: false,
-        message:
-          err.code === 21614
-            ? translate["Invalid Phone number"]
-            : translate["Internal server error"],
-      });
+    console.log('Error ----> ', err.message);
+    res.status(500).json({
+      success: false,
+      message:
+        err.code === 21614 ? translate['Invalid Phone number'] : translate['Internal server error']
+    });
   }
 };
 
@@ -104,25 +98,24 @@ exports.create = async (req, res) => {
 exports.getFew = async (req, res) => {
   try {
     let serviceProviders = await ServiceProviders.aggregate([
+      { $match: { verified: true } },
       {
-        $sample: { size: 10 },
+        $sample: { size: 10 }
       },
       {
         $project: {
           _id: 1,
           company_name: 1,
-          "location.city": 1,
-          photo: 1,
-        },
-      },
+          'location.city': 1,
+          photo: 1
+        }
+      }
     ]);
     res.json({ success: true, users: serviceProviders });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -135,25 +128,23 @@ exports.getById = async (req, res) => {
   try {
     let { userId } = req.params;
     let serviceProvider = await ServiceProviders.findById(userId)
-      .populate("services.service")
-      .populate("ratings.user", "first_name last_name photo");
+      .populate('services.service')
+      .populate('ratings.user', 'first_name last_name photo');
     if (!serviceProvider) {
       return res.json({
         success: false,
-        message: translate["No Service provider found"],
+        message: translate['No Service provider found']
       });
     }
 
     res.json({
       success: true,
-      user: serviceProvider,
+      user: serviceProvider
     });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -169,10 +160,8 @@ exports.delete = async (req, res) => {
     res.json({ success: true, user });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -209,7 +198,7 @@ exports.update = async (req, res) => {
       }
       if (req.files.cover) {
         let cover = [];
-        req.files.cover.forEach((file) => {
+        req.files.cover.forEach(file => {
           cover.push(file.path);
         });
         req.body.cover = cover;
@@ -217,19 +206,17 @@ exports.update = async (req, res) => {
     }
 
     const user = await ServiceProviders.findByIdAndUpdate(userId, req.body, {
-      new: true,
+      new: true
     }); // Updating the user
     res.json({
       success: true,
-      message: translate["User updated successfully"],
-      user,
+      message: translate['User updated successfully'],
+      user
     }); // Success
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -250,10 +237,8 @@ exports.getByAdmin = async (req, res) => {
     res.json({ success: true, serviceproviders, totalResults }); // Success
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -274,10 +259,8 @@ exports.getAllServiceProviders = async (req, res) => {
     res.json({ success: true, serviceproviders, totalResults }); // Success
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -288,18 +271,16 @@ exports.getUsersForMap = async (req, res) => {
         $project: {
           _id: 1,
           company_name: 1,
-          "location.lat": 1,
-          "location.lng": 1,
-        },
-      },
+          'location.lat': 1,
+          'location.lng': 1
+        }
+      }
     ]);
     return res.json({ users: serviceProviders });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -308,26 +289,23 @@ exports.rateUser = async (req, res) => {
     let { userId } = req.params;
     let alreadyRated = await ServiceProviders.findOne({
       _id: userId,
-      "ratings.user": req.body.user,
+      'ratings.user': req.body.user
     });
     if (alreadyRated) {
       alreadyRated = await ServiceProviders.findOneAndUpdate(
         {
           _id: userId,
-          "ratings.user": req.body.user,
+          'ratings.user': req.body.user
         },
         {
-          $set: { "ratings.$": req.body },
+          $set: { 'ratings.$': req.body }
         },
         {
-          new: true,
+          new: true
         }
       );
 
-      let ratingsSum = alreadyRated.ratings.reduce(
-        (prev, cnt) => prev + cnt.rating,
-        0
-      );
+      let ratingsSum = alreadyRated.ratings.reduce((prev, cnt) => prev + cnt.rating, 0);
       let rating = (ratingsSum / (alreadyRated.ratings.length || 1)).toFixed(1);
 
       alreadyRated.rating = rating;
@@ -335,16 +313,13 @@ exports.rateUser = async (req, res) => {
 
       return res.json({
         success: true,
-        message: translate["Rating Updated"],
+        message: translate['Rating Updated']
       });
     } else {
       let serviceProvider = await ServiceProviders.findById(userId);
       serviceProvider.ratings.push(req.body);
 
-      let ratingsSum = alreadyRated.ratings.reduce(
-        (prev, cnt) => prev + cnt.rating,
-        0
-      );
+      let ratingsSum = alreadyRated.ratings.reduce((prev, cnt) => prev + cnt.rating, 0);
       let rating = (ratingsSum / (alreadyRated.ratings.length || 1)).toFixed(1);
 
       serviceProvider.rating = rating;
@@ -352,15 +327,13 @@ exports.rateUser = async (req, res) => {
       serviceProvider.save();
       res.json({
         success: true,
-        message: translate["Thank You for rating"],
+        message: translate['Thank You for rating']
       });
     }
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };
 
@@ -373,49 +346,46 @@ exports.addBank = async (req, res) => {
     const accountToken = req.body.token;
     const personToken = req.body.personToken;
 
-    let front =
-      req.files["front"] !== undefined ? req.files["front"][0].path : "";
-    front !== "" && (front = front.replace(/\\/g, "/"));
+    let front = req.files['front'] !== undefined ? req.files['front'][0].path : '';
+    front !== '' && (front = front.replace(/\\/g, '/'));
 
-    let back = req.files["back"] !== undefined ? req.files["back"][0].path : "";
-    back !== "" && (back = back.replace(/\\/g, "/"));
+    let back = req.files['back'] !== undefined ? req.files['back'][0].path : '';
+    back !== '' && (back = back.replace(/\\/g, '/'));
 
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
-      return res
-        .status(404)
-        .json({ success: false, message: translate["No user Found"] });
+      return res.status(404).json({ success: false, message: translate['No user Found'] });
     }
 
     // creating company account
     const account = await stripe.account.create({
-      type: "custom",
-      country: "FR",
+      type: 'custom',
+      country: 'FR',
       account_token: accountToken,
       email: serviceProvider.email,
       business_profile: {
         name: serviceProvider.name,
-        mcc: "5811",
-        url: "http://google.com",
+        mcc: '5811',
+        url: 'http://google.com'
       },
       capabilities: {
         card_payments: { requested: true },
-        transfers: { requested: true },
+        transfers: { requested: true }
       },
       external_account: {
-        object: "bank_account",
+        object: 'bank_account',
         account_number: iban,
         bank_name: bankName,
-        country: "FR",
-        currency: "eur",
-      },
+        country: 'FR',
+        currency: 'eur'
+      }
     });
 
     //Creating person / representative of company
     var person = await stripe.accounts.createPerson(
       account.id, // id of the account created earlier
       {
-        person_token: personToken,
+        person_token: personToken
       }
     );
 
@@ -430,18 +400,16 @@ exports.addBank = async (req, res) => {
 
     serviceProvider.save();
 
-    res
-      .status(200)
-      .send({ success: true, message: translate["Bank Account added"] });
+    res.status(200).send({ success: true, message: translate['Bank Account added'] });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
+    console.log('Error ----> ', err);
     res.status(500).json({
       success: false,
       message:
         stripeErrors[err.code] ??
-        stripeErrors[err.param.replace("]", "").split("[")[1]] ??
-        translate["Internal server error"],
+        stripeErrors[err.param.replace(']', '').split('[')[1]] ??
+        translate['Internal server error']
     });
   }
 };
@@ -452,24 +420,22 @@ exports.EditBank = async (req, res) => {
 
     let serviceProvider = await ServiceProviders.findById(userId);
     if (!serviceProvider) {
-      return res
-        .status(404)
-        .json({ success: false, message: translate["No user Found"] });
+      return res.status(404).json({ success: false, message: translate['No user Found'] });
     }
 
     const accountLink = await stripe.accountLinks.create({
       account: serviceProvider.bank.stripeID,
       refresh_url: `${process.env.CLIENT_URL}/redirect=true`,
       return_url: `${process.env.CLIENT_URL}/redirect=true`,
-      type: "account_update",
+      type: 'account_update'
     });
     res.status(200).json({ success: true, url: accountLink });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
+    console.log('Error ----> ', err);
     res.status(500).json({
       success: false,
-      message: translate["Internal server error"],
+      message: translate['Internal server error']
     });
   }
 };
@@ -484,9 +450,7 @@ exports.turnOffNotifications = async (req, res) => {
     res.json({ success: true, notification: user.notification });
   } catch (err) {
     // Error handling
-    console.log("Error ----> ", err);
-    res
-      .status(500)
-      .json({ success: false, message: translate["Internal server error"] });
+    console.log('Error ----> ', err);
+    res.status(500).json({ success: false, message: translate['Internal server error'] });
   }
 };

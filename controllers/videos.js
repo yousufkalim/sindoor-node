@@ -2,7 +2,7 @@
  * Video controllers
  * @author Najam Ul Saqib
  */
-const fs = require("fs");
+const fs = require('fs');
 
 exports.videoStream = (req, res) => {
   let { dir, video } = req.params;
@@ -12,17 +12,15 @@ exports.videoStream = (req, res) => {
 
   //   If requested format is not supported, return error
   if (!video.match(/\.(mp4|mpeg|mov)$/)) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Video video format is not supported" });
+    return res.status(400).json({ success: false, message: 'Video video format is not supported' });
   }
   //   If requested video is not found, return error
   else if (!fs.existsSync(videoPath)) {
-    return res.status(404).json({ success: false, message: "Video not found" });
+    return res.status(404).json({ success: false, message: 'Video not found' });
   }
 
   // Ensure there is a range given for the video
-  const range = req.headers.range || "bytes=0-";
+  const range = req.headers.range || 'bytes=0-';
 
   const options = {};
 
@@ -30,10 +28,10 @@ exports.videoStream = (req, res) => {
   let end;
 
   if (range) {
-    const bytesPrefix = "bytes=";
+    const bytesPrefix = 'bytes=';
     if (range.startsWith(bytesPrefix)) {
       const bytesRange = range.substring(bytesPrefix.length);
-      const parts = bytesRange.split("-");
+      const parts = bytesRange.split('-');
       if (parts.length === 2) {
         const rangeStart = parts[0] && parts[0].trim();
         if (rangeStart && rangeStart.length > 0) {
@@ -47,7 +45,7 @@ exports.videoStream = (req, res) => {
     }
   }
 
-  res.setHeader("content-type", "video/mp4");
+  res.setHeader('content-type', 'video/mp4');
 
   fs.stat(videoPath, (err, stat) => {
     if (err) {
@@ -59,10 +57,10 @@ exports.videoStream = (req, res) => {
 
     let contentLength = stat.size;
 
-    if (req.method === "HEAD") {
+    if (req.method === 'HEAD') {
       res.statusCode = 200;
-      res.setHeader("accept-ranges", "bytes");
-      res.setHeader("content-length", contentLength);
+      res.setHeader('accept-ranges', 'bytes');
+      res.setHeader('content-length', contentLength);
       res.end();
     } else {
       let retrievedLength;
@@ -78,24 +76,24 @@ exports.videoStream = (req, res) => {
 
       res.statusCode = start !== undefined || end !== undefined ? 206 : 200;
 
-      res.setHeader("content-length", retrievedLength);
+      res.setHeader('content-length', retrievedLength);
 
       if (range !== undefined) {
         res.setHeader(
-          "content-range",
+          'content-range',
           `bytes ${start || 0}-${end || contentLength - 1}/${contentLength}`
         );
-        res.setHeader("accept-ranges", "bytes");
+        res.setHeader('accept-ranges', 'bytes');
       }
 
       const fileStream = fs.createReadStream(videoPath, options);
-      fileStream.on("error", (error) => {
+      fileStream.on('error', error => {
         console.log(`Error reading file ${videoPath}.`);
         console.log(error);
         res.sendStatus(500);
       });
 
-      res.setHeader("cache-control", "public, max-age=31536000");
+      res.setHeader('cache-control', 'public, max-age=43200');
       fileStream.pipe(res);
     }
   });

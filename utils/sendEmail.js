@@ -2,8 +2,8 @@
  * Send email service for forgot password
  * @author Yousuf Kalim
  */
-var nodemailer = require("nodemailer");
-const { translate } = require("./translate");
+var nodemailer = require('nodemailer');
+const { translate } = require('./translate');
 const sender_name = process.env.MAILER_DOMAIN;
 const sender_email = process.env.MAILER_EMAIL;
 const sender_password = process.env.MAILER_PASSWORD;
@@ -19,19 +19,19 @@ exports.contactUsEmail = (name, email, message) => {
   return new Promise((resolve, reject) => {
     // Sender mail server config
     var transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: sender_email,
-        pass: sender_password,
-      },
+        pass: sender_password
+      }
     });
 
     // Send email options
     var mailOptions = {
-      from: `${name} <${email}>`,
+      from: `${name} <${sender_email}>`,
       to: contact_email,
-      subject: `${translate["Message from"]} ${name}`,
-      text: message,
+      subject: `${translate['Message from']} ${name}`,
+      text: message
     };
 
     // Sending email
@@ -43,7 +43,7 @@ exports.contactUsEmail = (name, email, message) => {
         // Success
         resolve({
           success: true,
-          message: translate["Email sent successfully"],
+          message: translate['Email sent successfully']
         });
       }
     });
@@ -60,26 +60,26 @@ exports.sendEmail = (email, password) => {
   return new Promise((resolve, reject) => {
     // Sender mail server config
     var transporter = nodemailer.createTransport({
-      service: "gmail",
+      service: 'gmail',
       auth: {
         user: sender_email,
-        pass: sender_password,
-      },
+        pass: sender_password
+      }
     });
 
     // Send email options
     var mailOptions = {
       from: `${sender_name} <${sender_email}>`,
       to: email,
-      subject: translate["Your password has been changed"],
+      subject: translate['Your password has been changed'],
       html: EmailTemplate(password),
       attachments: [
         {
-          filename: "logo.png",
-          path: process.env.BASE_URL + "/uploads/logo.png",
-          cid: "logo",
-        },
-      ],
+          filename: 'logo.png',
+          path: process.env.BASE_URL + '/uploads/logo.png',
+          cid: 'logo'
+        }
+      ]
     };
 
     // Sending email
@@ -91,13 +91,13 @@ exports.sendEmail = (email, password) => {
         // Success
         resolve({
           success: true,
-          message: translate["Email sent successfully"],
+          message: translate['Email sent successfully']
         });
       }
     });
   });
 };
-const EmailTemplate = (password) => {
+const EmailTemplate = password => {
   return `
 
   <body style="margin: 0; padding: 0">
@@ -131,10 +131,10 @@ const EmailTemplate = (password) => {
                 <img style="height: 42px;" src="cid:logo" />
                 <h2 style="
                 font-family: Verdana; color: #e45a5a; ">
-                  ${translate["Hi there, your password is changed"]}
+                  ${translate['Hi there, your password is changed']}
                 </h2>
                 <h4 style="font-family: Verdana; color: #787878;">
-                  ${translate["Your new Password is below"]}
+                  ${translate['Your new Password is below']}
                 </h4>
               </td>
             </tr>
@@ -163,14 +163,14 @@ const EmailTemplate = (password) => {
                 <p align="center" style="
                     font-family: Verdana;
                     color: #787878;">
-                  ${translate["Use this password to login now."]}
+                  ${translate['Use this password to login now.']}
                 </p>
               </td>
             </tr>
             <tr>
               <td>
                 <p align="center" style="color: #000; font-family: Verdana">
-                  ${translate["This email is generated automatically please do not reply."]}
+                  ${translate['This email is generated automatically please do not reply.']}
                 </p>
               </td>
             </tr>
